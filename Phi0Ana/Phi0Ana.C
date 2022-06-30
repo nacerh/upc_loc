@@ -30,9 +30,9 @@ void Phi0Ana(TString dataORmc)
 {
     // Open the file containing the tree.
     TFile *inputFile = NULL;
-    if(dataORmc == "data") inputFile = TFile::Open("/Users/ahamdi/lbl/upc/kpkm/output/data/350_20220224-1926/AnalysisResults_350.root"); // home/nacer = Users/ahamdi/lbl
-    if(dataORmc == "mc") inputFile = TFile::Open("/Users/ahamdi/lbl/upc/kpkm/output/mc/356_20220505-1003/AnalysisResults_MC_356.root"); // home/nacer = Users/ahamdi/lbl
-    TString outDir = "/Users/ahamdi/lbl/upc/Phi0Ana/output_Phi0Ana";
+    if(dataORmc == "data") inputFile = TFile::Open("/Users/ahamdi/lbl/upc_loc/kpkm/output/data/350_20220224-1926/AnalysisResults_350.root"); // home/nacer = Users/ahamdi/lbl
+    if(dataORmc == "mc") inputFile = TFile::Open("/Users/ahamdi/lbl/upc_loc/kpkm/output/mc/356_20220505-1003/AnalysisResults_MC_356.root"); // home/nacer = Users/ahamdi/lbl
+    TString outDir = "/Users/ahamdi/lbl/upc_loc/Phi0Ana/output_Phi0Ana";
 
     TTree *inputTree = (TTree *)inputFile->Get("Central/Selected");
     if(inputTree == nullptr)

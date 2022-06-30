@@ -41,7 +41,7 @@ void kpkmAna()
     gStyle->SetPadGridX(true);
     gStyle->SetPadGridY(true);
 
-    TString outDir = "/Users/ahamdi/lbl/upc/Phi0Ana/output_Phi0Ana";
+    TString outDir = "/Users/ahamdi/lbl/upc_loc/Phi0Ana/output_Phi0Ana";
     TFile *f_data = TFile::Open(Form("%s/Phi0Ana_data.root", outDir.Data()));
     TFile *f_mc = TFile::Open(Form("%s/Phi0Ana_mc.root", outDir.Data()));
     if(f_data == nullptr || f_mc == nullptr)
