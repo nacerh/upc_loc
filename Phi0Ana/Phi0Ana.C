@@ -79,6 +79,10 @@ void Phi0Ana(TString dataORmc)
 
     // ------------------------------------ Invariant Mass ------------------------------------ 
 
+    Int_t nbins  = 5;        // 100
+    Double_t min_2km = 0.95; // 0.95
+    Double_t max_2km = 2.0;  // 2.0
+
     //**** Kaons
     auto hMassPairKaon = new TH1F("hMassPairKaon", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 300, 0.95, 2.0);
     // 2 pions of different charge 
@@ -133,79 +137,85 @@ void Phi0Ana(TString dataORmc)
     // ------------- Signal, Bkg and their subtraction
 
     // Select Kaon
-    auto hMassPairKaonSig = new TH1F("hMassPairKaonSig", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 100, 0.95, 2.0);
+    auto hMassPairKaonSig = new TH1F("hMassPairKaonSig", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", nbins, 0.95, 2.0);
     hMassPairKaonSig->SetLineColor(kBlue);
-    auto hMassPairKaonBkg = new TH1F("hMassPairKaonBkg", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 100, 0.95, 2.0);
+    auto hMassPairKaonBkg = new TH1F("hMassPairKaonBkg", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", nbins, 0.95, 2.0);
     hMassPairKaonBkg->SetLineColor(kRed);
 
     // Select Kaon & Reject Pion
 
-    auto hMassPairKaonRejectPionSig = new TH1F("hMassPairKaonRejectPionSig", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 100, 0.95, 2.0);
+    auto hMassPairKaonRejectPionSig = new TH1F("hMassPairKaonRejectPionSig", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", nbins, 0.95, 2.0);
     hMassPairKaonRejectPionSig->SetLineColor(kBlue);
-    auto hMassPairKaonRejectPionBkg = new TH1F("hMassPairKaonRejectPionBkg", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 100, 0.95, 2.0);
+    auto hMassPairKaonRejectPionBkg = new TH1F("hMassPairKaonRejectPionBkg", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", nbins, 0.95, 2.0);
     hMassPairKaonRejectPionBkg->SetLineColor(kRed);
 
     // Select Kaon & Reject (Pion + Muon)
 
-    auto hMassPairKaonRejectPionMuonSig = new TH1F("hMassPairKaonRejectPionMuonSig", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 100, 0.95, 2.0);
+    auto hMassPairKaonRejectPionMuonSig = new TH1F("hMassPairKaonRejectPionMuonSig", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", nbins, 0.95, 2.0);
     hMassPairKaonRejectPionMuonSig->SetLineColor(kBlue);
-    auto hMassPairKaonRejectPionMuonBkg = new TH1F("hMassPairKaonRejectPionMuonBkg", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 100, 0.95, 2.0);
+    auto hMassPairKaonRejectPionMuonBkg = new TH1F("hMassPairKaonRejectPionMuonBkg", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", nbins, 0.95, 2.0);
     hMassPairKaonRejectPionMuonBkg->SetLineColor(kRed);
 
     // Select Kaon & Reject (Pion + Muon + Electron)
 
-    auto hMassPairKaonRejectAllSig = new TH1F("hMassPairKaonRejectAllSig", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 100, 0.95, 2.0);
+    auto hMassPairKaonRejectAllSig = new TH1F("hMassPairKaonRejectAllSig", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", nbins, 0.95, 2.0); //nbins, 0.95, 2.0
     hMassPairKaonRejectAllSig->SetLineColor(kBlue);
-    auto hMassPairKaonRejectAllBkg = new TH1F("hMassPairKaonRejectAllBkg", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 100, 0.95, 2.0);
+    auto hMassPairKaonRejectAllBkg = new TH1F("hMassPairKaonRejectAllBkg", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", nbins, 0.95, 2.0); //100, 0.95, 2.0
     hMassPairKaonRejectAllBkg->SetLineColor(kRed);
 
     // -------------- Invariant Mass vs. Pair Rapidity --------------
     auto hMassPairKaonVsRapiditySig = new TH2D("hMassPairKaonVsRapiditySig", ";Counts;pair y;m_{K^{+}K^{-}} (GeV/c^{2})", 3,-0.8,0.8, 100, 0.95, 2.0);
     auto hMassPairKaonVsRapidityBkg = new TH2D("hMassPairKaonVsRapidityBkg", ";Counts;pair y;m_{K^{+}K^{-}} (GeV/c^{2})", 3,-0.8,0.8, 100, 0.95, 2.0);
+
+    // -------------- Invariant Mass vs. Cos(Theta) --------------
+    // cos θ = |tanh((η1 − η2)/2)|
+    // angle between the K^+ track (or equivalently the K^-) track and the beamline,  in the K^+K^- center of mass frame.
+    auto hMassPairKaonVsCosThetaSig = new TH2D("hMassPairKaonVsCosThetaSig", ";Counts;cos#theta;m_{K^{+}K^{-}} (GeV/c^{2})", 4,0.,0.8, 100, 0.95, 2.0);
+    auto hMassPairKaonVsCosThetaBkg = new TH2D("hMassPairKaonVsCosThetaBkg", ";Counts;cos#theta;m_{K^{+}K^{-}} (GeV/c^{2})", 4,0.,0.8, 100, 0.95, 2.0);
     
     // ------------------------------------ Pair transverse momentum ------------------------------------ 
 
-    auto hPtPair = new TH1F("hPtPair", "; pair p_{T} (GeV/c); Counts", 300, 0., 3.);
+    auto hPtPair = new TH1F("hPtPair", "; pair p_{T} (GeV/c); Counts", 300, 0., 1.); //0., 3.
     // 2 tracks of different charge 
-    auto hPtUnLikeCharge = new TH1F("hPtUnLikeCharge", "; pair p_{T} (GeV/c); Counts", 300, 0., 3.);
+    auto hPtUnLikeCharge = new TH1F("hPtUnLikeCharge", "; pair p_{T} (GeV/c); Counts", 300, 0., 1.);
     hPtUnLikeCharge->SetLineColor(6);
     // 2 tracks of same charge
-    auto hPtLikeCharge = new TH1F("hPtLikeCharge", "; pair p_{T} (GeV/c); Counts", 300, 0., 3.);
+    auto hPtLikeCharge = new TH1F("hPtLikeCharge", "; pair p_{T} (GeV/c); Counts", 300, 0., 1.);
     hPtLikeCharge->SetLineColor(7);
     // Pion dE/dx cut
-    auto hPtPiondEdxCut = new TH1F("hPtPiondEdxCut", "; pair p_{T} (GeV/c); Counts", 300, 0., 3.);
+    auto hPtPiondEdxCut = new TH1F("hPtPiondEdxCut", "; pair p_{T} (GeV/c); Counts", 300, 0., 1.);
     hPtPiondEdxCut->SetLineColor(28);
     // Kaon dE/dx cut
-    auto hPtKaondEdxCut = new TH1F("hPtKaondEdxCut", "; pair p_{T} (GeV/c); Counts", 300, 0.0, 3.0);
+    auto hPtKaondEdxCut = new TH1F("hPtKaondEdxCut", "; pair p_{T} (GeV/c); Counts", 300, 0.0, 1.);
     hPtKaondEdxCut->SetLineColor(46);
 
     // ----------- Signal, Bkg and their subtraction
 
     // Select Kaon
-    auto hPtPairKaonSig = new TH1F("hPtPairKaonSig", "; pair p_{T} (GeV/c); Counts", 100, 0., 0.1);
+    auto hPtPairKaonSig = new TH1F("hPtPairKaonSig", "; pair p_{T} (GeV/c); Counts", nbins, 0., 0.1);
     hPtPairKaonSig->SetLineColor(kBlue);
-    auto hPtPairKaonBkg = new TH1F("hPtPairKaonBkg", "; pair p_{T} (GeV/c); Counts", 100, 0., 0.1);
+    auto hPtPairKaonBkg = new TH1F("hPtPairKaonBkg", "; pair p_{T} (GeV/c); Counts", nbins, 0., 0.1);
     hPtPairKaonBkg->SetLineColor(kRed);
 
     // Select Kaon & Reject Pion
 
-    auto hPtPairKaonRejectPionSig = new TH1F("hPtPairKaonRejectPionSig", "; pair p_{T} (GeV/c); Counts", 100, 0., 0.1);
+    auto hPtPairKaonRejectPionSig = new TH1F("hPtPairKaonRejectPionSig", "; pair p_{T} (GeV/c); Counts", nbins, 0., 0.1);
     hPtPairKaonRejectPionSig->SetLineColor(kBlue);
-    auto hPtPairKaonRejectPionBkg = new TH1F("hPtPairKaonRejectPionBkg", "; pair p_{T} (GeV/c); Counts", 100, 0., 0.1);
+    auto hPtPairKaonRejectPionBkg = new TH1F("hPtPairKaonRejectPionBkg", "; pair p_{T} (GeV/c); Counts", nbins, 0., 0.1);
     hPtPairKaonRejectPionBkg->SetLineColor(kRed);
 
     // Select Kaon & Reject (Pion + Muon)
 
-    auto hPtPairKaonRejectPionMuonSig = new TH1F("hPtPairKaonRejectPionMuonSig", "; pair p_{T} (GeV/c); Counts", 100, 0., 0.1);
+    auto hPtPairKaonRejectPionMuonSig = new TH1F("hPtPairKaonRejectPionMuonSig", "; pair p_{T} (GeV/c); Counts", nbins, 0., 0.1);
     hPtPairKaonRejectPionMuonSig->SetLineColor(kBlue);
-    auto hPtPairKaonRejectPionMuonBkg = new TH1F("hPtPairKaonRejectPionMuonBkg", "; pair p_{T} (GeV/c); Counts", 100, 0., 0.1);
+    auto hPtPairKaonRejectPionMuonBkg = new TH1F("hPtPairKaonRejectPionMuonBkg", "; pair p_{T} (GeV/c); Counts", nbins, 0., 0.1);
     hPtPairKaonRejectPionMuonBkg->SetLineColor(kRed);
 
     // Select Kaon & Reject (Pion + Muon + Electron)
 
-    auto hPtPairKaonRejectAllSig = new TH1F("hPtPairKaonRejectAllSig", "; pair p_{T} (GeV/c); Counts", 100, 0., 0.1);
+    auto hPtPairKaonRejectAllSig = new TH1F("hPtPairKaonRejectAllSig", "; pair p_{T} (GeV/c); Counts", nbins, 0., 0.1);
     hPtPairKaonRejectAllSig->SetLineColor(kBlue);
-    auto hPtPairKaonRejectAllBkg = new TH1F("hPtPairKaonRejectAllBkg", "; pair p_{T} (GeV/c); Counts", 100, 0., 0.1);
+    auto hPtPairKaonRejectAllBkg = new TH1F("hPtPairKaonRejectAllBkg", "; pair p_{T} (GeV/c); Counts", nbins, 0., 0.1);
     hPtPairKaonRejectAllBkg->SetLineColor(kRed);
 
     // --------------------------------------------------------------------------------------------------
@@ -280,6 +290,9 @@ void Phi0Ana(TString dataORmc)
 
     // -------------- Pair Rapidity --------------
     auto hRapidity = new TH1F("hRapidity", ";pair y;Counts", 300,-1.,1.);
+   
+    // -------------- cos(Theta) --------------
+    auto hCosTheta = new TH1F("hCosTheta", ";cos(#theta);Counts", 300,-1.,1.);
    
     // --------- Count sig and Bkg events after different PID cuts
     Int_t NumbKaonSig1 = 0, NumbKaonSig2 = 0, NumbKaonSig3 = 0, NumbKaonSig4 = 0;
@@ -486,6 +499,7 @@ void Phi0Ana(TString dataORmc)
             lvSumPion = lvPion[0] + lvPion[1];
             lvSumMuon = lvMuon[0] + lvMuon[1];
 	        lvSumElectron = lvElectron[0] + lvElectron[1];
+            double cosTheta = abs(tanh((lvKaon[0].PseudoRapidity() - lvKaon[1].PseudoRapidity()) / 2.));
 
             if (TrackQ[0] * TrackQ[1] > 0)
                 likeSign = 1;
@@ -567,7 +581,7 @@ void Phi0Ana(TString dataORmc)
 
             for(Int_t iTrack=0; iTrack<nGoodTracks; iTrack++)
             {
-                // -------------- S.t.d dE/dx in fifferet Pt and Eta regions
+                // -------------- S.t.d dE/dx in different Pt and Eta regions
                 if(lvSumKaon.Pt() < 0.25) hStdDEdxKaon_Pt025->Fill(PIDTPCKaon[iTrack]);
                 if(lvSumKaon.Pt() > 0.25 && lvSumKaon.Pt() < 0.50) hStdDEdxKaon_Pt050->Fill(PIDTPCKaon[iTrack]);
                 if(lvSumKaon.Pt() > 0.50 && lvSumKaon.Pt() < 0.75) hStdDEdxKaon_Pt075->Fill(PIDTPCKaon[iTrack]);
@@ -589,7 +603,9 @@ void Phi0Ana(TString dataORmc)
 
             // --------- Count sig and Bkg events after different PID cuts
 
-            if(lvSumKaon.Pt() > 0.1) continue; // 0.1, 0.12, 0.08
+            if(lvSumKaon.Pt() > 0.1) continue; // 0.1, 0.11, 0.09
+
+            hCosTheta->Fill(cosTheta);
 
             // ------ dE/dx sigma 1 vs. dE/dx sigma 2
             hStdDEdx2Kaon->Fill(PIDTPCKaon[0], PIDTPCKaon[1]);
@@ -611,7 +627,7 @@ void Phi0Ana(TString dataORmc)
             }
 
             // ------ Sig events
-            if((TMath::Power((PIDTPCKaon[0] - x0), 2) + TMath::Power((PIDTPCKaon[1] - y0), 2)) < 9) // 9, 12.25, 6.25 
+            if((TMath::Power((PIDTPCKaon[0] - x0), 2) + TMath::Power((PIDTPCKaon[1] - y0), 2)) < 9) // 9, 8, 10
             {
                 NumbKaonSig1++;
                 hMassPairKaonSig->Fill(lvSumKaon.M());
@@ -629,17 +645,19 @@ void Phi0Ana(TString dataORmc)
                     hMassPairKaonRejectPionMuonSig->Fill(lvSumKaon.M());
                     hPtPairKaonRejectPionMuonSig->Fill(lvSumKaon.Pt());
                 }
-                if(abs(PIDTPCPion[0]) > 2 && abs(PIDTPCPion[1]) > 2 && abs(PIDTPCMuon[0]) > 2 && abs(PIDTPCMuon[1]) > 2 && abs(PIDTPCElectron[0]) > 2 && abs(PIDTPCElectron[1]) > 2) // 2, 2.5, 1.5
+                if(abs(PIDTPCPion[0]) > 2 && abs(PIDTPCPion[1]) > 2 && abs(PIDTPCMuon[0]) > 2 && abs(PIDTPCMuon[1]) > 2 && abs(PIDTPCElectron[0]) > 2 && abs(PIDTPCElectron[1]) > 2) // 2, 1.75, 2.25
                 {
                     NumbKaonSig4++;
                     hMassPairKaonRejectAllSig->Fill(lvSumKaon.M());
                     hPtPairKaonRejectAllSig->Fill(lvSumKaon.Pt());
                     hMassPairKaonVsRapiditySig->Fill(lvSumKaon.Rapidity(), lvSumKaon.M());
+                    // cos θ = |tanh((η1 − η2)/2)|
+                    hMassPairKaonVsCosThetaSig->Fill(cosTheta, lvSumKaon.M());
                 }
             }
 
             // ------ Bkg events
-            if((TMath::Power((PIDTPCKaon[0] - x0), 2) + TMath::Power((PIDTPCKaon[1] - y0), 2)) > 16 && (TMath::Power((PIDTPCKaon[0] - x0), 2) + TMath::Power((PIDTPCKaon[1] - y0), 2)) < 25) // (16, 25), (16, 28.25), (16, 22.25)
+            if((TMath::Power((PIDTPCKaon[0] - x0), 2) + TMath::Power((PIDTPCKaon[1] - y0), 2)) > 16 && (TMath::Power((PIDTPCKaon[0] - x0), 2) + TMath::Power((PIDTPCKaon[1] - y0), 2)) < 25) // (16, 25), (16, 24), (16, 26)
             {
                 hMassPairKaonBkg->Fill(lvSumKaon.M());
                 hPtPairKaonBkg->Fill(lvSumKaon.Pt());
@@ -657,12 +675,14 @@ void Phi0Ana(TString dataORmc)
                     hMassPairKaonRejectPionMuonBkg->Fill(lvSumKaon.M());
                     hPtPairKaonRejectPionMuonBkg->Fill(lvSumKaon.Pt());
                 }
-                if(abs(PIDTPCPion[0]) > 2 && abs(PIDTPCPion[1]) > 2 && abs(PIDTPCMuon[0]) > 2 && abs(PIDTPCMuon[1]) > 2 && abs(PIDTPCElectron[0]) > 2 && abs(PIDTPCElectron[1]) > 2) // 2, 2.5, 1.5
+                if(abs(PIDTPCPion[0]) > 2 && abs(PIDTPCPion[1]) > 2 && abs(PIDTPCMuon[0]) > 2 && abs(PIDTPCMuon[1]) > 2 && abs(PIDTPCElectron[0]) > 2 && abs(PIDTPCElectron[1]) > 2) // 2, 1.75, 2.25
                 {
                     NumbKaonBkg4++;
                     hMassPairKaonRejectAllBkg->Fill(lvSumKaon.M());
                     hPtPairKaonRejectAllBkg->Fill(lvSumKaon.Pt());
                     hMassPairKaonVsRapidityBkg->Fill(lvSumKaon.Rapidity(), lvSumKaon.M());
+                    // cos θ = |tanh((η1 − η2)/2)|
+                    hMassPairKaonVsCosThetaBkg->Fill(cosTheta, lvSumKaon.M());
                 }
             }
 
@@ -689,22 +709,27 @@ void Phi0Ana(TString dataORmc)
         // cout<<" nentries_truth = "<<nentries_truth<<endl;
 
         // Pair Invariant Mass
-        auto hMassPairKaon_truth = new TH1F("hMassPairKaon_truth", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 300, 0.95, 2.0);
+        auto hMassPairKaon_truth = new TH1F("hMassPairKaon_truth", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 300, 0.95, 2.0); // 300, 0.95, 2.0
         // Pair Transverse Momentum
         auto hPtPair_truth = new TH1F("hPtPair_truth", "; p_{T} (GeV/c); Counts", 300, 0., 3.);
         // Invariant Mass vs. Pair Rapidity --------------
         auto hMassPairKaonVsRapidity_truth = new TH2D("hMassPairKaonVsRapidity_truth", ";pair y;m_{K^{+}K^{-}} (GeV/c^{2});Counts", 3,-0.8,0.8, 100, 0.95, 2.0);
+        auto hMassPairKaonVsCosTheta_truth = new TH2D("hMassPairKaonVsCosTheta_truth", ";pair y;m_{K^{+}K^{-}} (GeV/c^{2});Counts", 4,0.,1., 100, 0.95, 2.0);
 
         Float_t Mass_MC_T;
         Float_t Pt_MC_T;
         Float_t Rapidity_MC_T;
         Float_t Phi_MC_T;
+        Float_t Eta1_MC_T;
+        Float_t Eta2_MC_T;
         Int_t RunNum_MC_T;
 
         inputTree_truth->SetBranchAddress("Mass_MC_T", &Mass_MC_T);
         inputTree_truth->SetBranchAddress("Pt_MC_T", &Pt_MC_T);
         inputTree_truth->SetBranchAddress("Rapidity_MC_T", &Rapidity_MC_T);
         inputTree_truth->SetBranchAddress("Phi_MC_T", &Phi_MC_T);
+        inputTree_truth->SetBranchAddress("Eta1_MC_T", &Eta1_MC_T);
+        inputTree_truth->SetBranchAddress("Eta2_MC_T", &Eta2_MC_T);
         inputTree_truth->SetBranchAddress("RunNum_MC_T", &RunNum_MC_T);
 
         for (int i = 0; i < inputTree_truth->GetEntries(); i++)
@@ -719,9 +744,12 @@ void Phi0Ana(TString dataORmc)
             isValidatedRun = (std::find(runList_Rho0.begin(), runList_Rho0.end(), RunNum_MC_T) != runList_Rho0.end());
             if(!isValidatedRun) continue;
 
+            double cosTheta_truth = abs(tanh((Eta1_MC_T - Eta2_MC_T) / 2.));
+
             hMassPairKaon_truth->Fill(Mass_MC_T);
             hPtPair_truth->Fill(Pt_MC_T);
             hMassPairKaonVsRapidity_truth->Fill(Rapidity_MC_T, Mass_MC_T);
+            hMassPairKaonVsCosTheta_truth->Fill(cosTheta_truth, Mass_MC_T);
         }
     
         // Pair Invariant Mass
@@ -751,6 +779,14 @@ void Phi0Ana(TString dataORmc)
         hMassPairKaonVsRapidity_truth->Write();
         cMassPairKaonVsRapidity_truth->Print(Form("%s/cMassPairKaonVsRapidity_truth.root", outDir.Data()),"root");
         cMassPairKaonVsRapidity_truth->Print(Form("%s/cMassPairKaonVsRapidity_truth.pdf", outDir.Data()),"pdf");
+
+        // -------------- Invariant Mass vs. Cos(Theta) --------------
+        auto cMassPairKaonVsCosTheta_truth = new TCanvas("cMassPairKaonVsCosTheta_truth", "cMassPairKaonVsCosTheta_truth", 600, 400);
+        cMassPairKaonVsCosTheta_truth->cd();
+        hMassPairKaonVsCosTheta_truth->Draw("colz");
+        hMassPairKaonVsCosTheta_truth->Write();
+        cMassPairKaonVsCosTheta_truth->Print(Form("%s/cMassPairKaonVsCosTheta_truth.root", outDir.Data()),"root");
+        cMassPairKaonVsCosTheta_truth->Print(Form("%s/cMassPairKaonVsCosTheta_truth.pdf", outDir.Data()),"pdf");
     }
 
     // -------- Events per run
@@ -811,6 +847,17 @@ void Phi0Ana(TString dataORmc)
     hRapidity->Write();
     cRapidity->Print(Form("%s/cRapidity_%s.root", outDir.Data(), dataORmc.Data()),"root");
     cRapidity->Print(Form("%s/cRapidity_%s.pdf", outDir.Data(), dataORmc.Data()),"pdf");
+
+    // -------------- cos(Theta) --------------
+    auto cCosTheta = new TCanvas("cCosTheta", "cCosTheta", 600, 400);
+    cCosTheta->cd();
+    hCosTheta->SetMinimum(0.);
+    // inputTree->Project("hCosTheta", "VtxZ_T");
+    // h_CosTheta->GetXaxis()->SetNdivisions(520);
+    hCosTheta->Draw();
+    hCosTheta->Write();
+    cCosTheta->Print(Form("%s/cCosTheta_%s.root", outDir.Data(), dataORmc.Data()),"root");
+    cCosTheta->Print(Form("%s/cCosTheta_%s.pdf", outDir.Data(), dataORmc.Data()),"pdf");
 
     // ------------------------------------ Invariant Mass ------------------------------------ 
 
@@ -910,7 +957,7 @@ void Phi0Ana(TString dataORmc)
     
     auto cMassPairKaonSub = new TCanvas("cMassPairKaonSub", "cMassPairKaonSub", 600, 400);
     cMassPairKaonSub->cd();
-    auto hMassPairKaonSub = new TH1F("hMassPairKaonSub", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 100, 0.95, 2.0);
+    auto hMassPairKaonSub = new TH1F("hMassPairKaonSub", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", nbins, 0.95, 2.0);
     hMassPairKaonSub->Add(hMassPairKaonSig, hMassPairKaonBkg, 1., -1.);
     hMassPairKaonSub->SetLineColor(1); 
     hMassPairKaonSub->SetMarkerStyle(kOpenCircle);
@@ -936,7 +983,7 @@ void Phi0Ana(TString dataORmc)
 
     auto cMassPairKaonRejectPionSub = new TCanvas("cMassPairKaonRejectPionSub", "cMassPairKaonRejectPionSub", 600, 400);
     cMassPairKaonRejectPionSub->cd();
-    auto hMassPairKaonRejectPionSub = new TH1F("hMassPairKaonRejectPionSub", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 100, 0.95, 2.0);
+    auto hMassPairKaonRejectPionSub = new TH1F("hMassPairKaonRejectPionSub", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", nbins, 0.95, 2.0);
     hMassPairKaonRejectPionSub->Add(hMassPairKaonRejectPionSig, hMassPairKaonRejectPionBkg, 1., -1.);
     hMassPairKaonRejectPionSub->SetLineColor(1); 
     hMassPairKaonRejectPionSub->SetMarkerStyle(kOpenCircle);
@@ -962,7 +1009,7 @@ void Phi0Ana(TString dataORmc)
     
     auto cMassPairKaonRejectPionMuonSub = new TCanvas("cMassPairKaonRejectPionMuonSub", "cMassPairKaonRejectPionMuonSub", 600, 400);
     cMassPairKaonRejectPionMuonSub->cd();
-    auto hMassPairKaonRejectPionMuonSub = new TH1F("hMassPairKaonRejectPionMuonSub", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 100, 0.95, 2.0);
+    auto hMassPairKaonRejectPionMuonSub = new TH1F("hMassPairKaonRejectPionMuonSub", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", nbins, 0.95, 2.0);
     hMassPairKaonRejectPionMuonSub->Add(hMassPairKaonRejectPionMuonSig, hMassPairKaonRejectPionMuonBkg, 1., -1.);
     hMassPairKaonRejectPionMuonSub->SetLineColor(1); 
     hMassPairKaonRejectPionMuonSub->SetMarkerStyle(kOpenCircle);
@@ -988,7 +1035,7 @@ void Phi0Ana(TString dataORmc)
     
     auto cMassPairKaonRejectAllSub = new TCanvas("cMassPairKaonRejectAllSub", "cMassPairKaonRejectAllSub", 600, 400);
     cMassPairKaonRejectAllSub->cd();
-    auto hMassPairKaonRejectAllSub = new TH1F("hMassPairKaonRejectAllSub", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", 100, 0.95, 2.0);
+    auto hMassPairKaonRejectAllSub = new TH1F("hMassPairKaonRejectAllSub", "; m_{K^{+}K^{-}} (GeV/c^{2}); Counts", nbins, 0.95, 2.0); //100, 0.95, 2.0
     hMassPairKaonRejectAllSub->Add(hMassPairKaonRejectAllSig, hMassPairKaonRejectAllBkg, 1., -1.);
     hMassPairKaonRejectAllSub->SetLineColor(1); 
     hMassPairKaonRejectAllSub->SetMarkerStyle(kOpenCircle);
@@ -1020,6 +1067,17 @@ void Phi0Ana(TString dataORmc)
     hMassPairKaonVsRapiditySub->Write();
     cMassPairKaonVsRapiditySub->Print(Form("%s/cMassPairKaonVsRapiditySub_%s.root", outDir.Data(), dataORmc.Data()),"root");
     cMassPairKaonVsRapiditySub->Print(Form("%s/cMassPairKaonVsRapiditySub_%s.pdf", outDir.Data(), dataORmc.Data()),"pdf");
+
+    // in different rapidity regions
+
+    auto cMassPairKaonVsCosThetaSub = new TCanvas("cMassPairKaonVsCosThetaSub", "cMassPairKaonVsCosThetaSub", 600, 400);
+    cMassPairKaonVsCosThetaSub->cd();
+    auto hMassPairKaonVsCosThetaSub = new TH2D("hMassPairKaonVsCosThetaSub", ";pair y;m_{K^{+}K^{-}} (GeV/c^{2});Counts", 4,0.,0.8, 100, 0.95, 2.0);
+    hMassPairKaonVsCosThetaSub->Add(hMassPairKaonVsCosThetaSig, hMassPairKaonVsCosThetaBkg, 1., -1.);
+    hMassPairKaonVsCosThetaSub->Draw("colz");
+    hMassPairKaonVsCosThetaSub->Write();
+    cMassPairKaonVsCosThetaSub->Print(Form("%s/cMassPairKaonVsCosThetaSub_%s.root", outDir.Data(), dataORmc.Data()),"root");
+    cMassPairKaonVsCosThetaSub->Print(Form("%s/cMassPairKaonVsCosThetaSub_%s.pdf", outDir.Data(), dataORmc.Data()),"pdf");
 
     //  ------------------------------------ Pair transverse momentum ------------------------------------ 
 
@@ -1055,7 +1113,7 @@ void Phi0Ana(TString dataORmc)
     
     auto cPtPairKaonSub = new TCanvas("cPtPairKaonSub", "cPtPairKaonSub", 600, 400);
     cPtPairKaonSub->cd();
-    auto hPtPairKaonSub = new TH1F("hPtPairKaonSub", "; p_{T} (GeV/c); Counts", 100, 0., 0.1);
+    auto hPtPairKaonSub = new TH1F("hPtPairKaonSub", "; p_{T} (GeV/c); Counts", nbins, 0., 0.1);
     hPtPairKaonSub->Add(hPtPairKaonSig, hPtPairKaonBkg, 1., -1.);
     hPtPairKaonSub->SetLineColor(1); 
     hPtPairKaonSub->SetMarkerStyle(kOpenCircle);
@@ -1081,7 +1139,7 @@ void Phi0Ana(TString dataORmc)
 
     auto cPtPairKaonRejectPionSub = new TCanvas("cPtPairKaonRejectPionSub", "cPtPairKaonRejectPionSub", 600, 400);
     cPtPairKaonRejectPionSub->cd();
-    auto hPtPairKaonRejectPionSub = new TH1F("hPtPairKaonRejectPionSub", "; p_{T} (GeV/c); Counts", 100, 0., 0.1);
+    auto hPtPairKaonRejectPionSub = new TH1F("hPtPairKaonRejectPionSub", "; p_{T} (GeV/c); Counts", nbins, 0., 0.1);
     hPtPairKaonRejectPionSub->Add(hPtPairKaonRejectPionSig, hPtPairKaonRejectPionBkg, 1., -1.);
     hPtPairKaonRejectPionSub->SetLineColor(1); 
     hPtPairKaonRejectPionSub->SetMarkerStyle(kOpenCircle);
@@ -1107,7 +1165,7 @@ void Phi0Ana(TString dataORmc)
     
     auto cPtPairKaonRejectPionMuonSub = new TCanvas("cPtPairKaonRejectPionMuonSub", "cPtPairKaonRejectPionMuonSub", 600, 400);
     cPtPairKaonRejectPionMuonSub->cd();
-    auto hPtPairKaonRejectPionMuonSub = new TH1F("hPtPairKaonRejectPionMuonSub", "; p_{T} (GeV/c); Counts", 100, 0., 0.1);
+    auto hPtPairKaonRejectPionMuonSub = new TH1F("hPtPairKaonRejectPionMuonSub", "; p_{T} (GeV/c); Counts", nbins, 0., 0.1);
     hPtPairKaonRejectPionMuonSub->Add(hPtPairKaonRejectPionMuonSig, hPtPairKaonRejectPionMuonBkg, 1., -1.);
     hPtPairKaonRejectPionMuonSub->SetLineColor(1); 
     hPtPairKaonRejectPionMuonSub->SetMarkerStyle(kOpenCircle);
@@ -1133,7 +1191,7 @@ void Phi0Ana(TString dataORmc)
     
     auto cPtPairKaonRejectAllSub = new TCanvas("cPtPairKaonRejectAllSub", "cPtPairKaonRejectAllSub", 600, 400);
     cPtPairKaonRejectAllSub->cd();
-    auto hPtPairKaonRejectAllSub = new TH1F("hPtPairKaonRejectAllSub", "; p_{T} (GeV/c); Counts", 100, 0., 0.1);
+    auto hPtPairKaonRejectAllSub = new TH1F("hPtPairKaonRejectAllSub", "; p_{T} (GeV/c); Counts", nbins, 0., 0.1);
     hPtPairKaonRejectAllSub->Add(hPtPairKaonRejectAllSig, hPtPairKaonRejectAllBkg, 1., -1.);
     hPtPairKaonRejectAllSub->SetLineColor(1); 
     hPtPairKaonRejectAllSub->SetMarkerStyle(kOpenCircle);
@@ -1386,7 +1444,4 @@ void Phi0Ana(TString dataORmc)
     hStdDEdxElectron->Write();
     cStdDEdxElectron->Print(Form("%s/cStdDEdxElectron_%s.root", outDir.Data(), dataORmc.Data()),"root");
     cStdDEdxElectron->Print(Form("%s/cStdDEdxElectron_%s.pdf", outDir.Data(), dataORmc.Data()),"pdf");
-
-    cout<<"triggers all runs = "<<fHistTriggersPerRun->Integral()<<endl;
-    cout<<"triggers selected runs = "<<hEvents->Integral()<<endl;
 }
