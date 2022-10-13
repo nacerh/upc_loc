@@ -1,6 +1,7 @@
 #include "TFile.h"
 #include "TH1F.h"
 #include "TF1.h"
+#include "TProfile.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include "TGraphMultiErrors.h"
@@ -34,28 +35,34 @@ void kpkmAna()
     // gStyle->SetTitleOffset(0.01, "y");
     // gStyle->SetTitleOffset(1.7, "X");
     // gStyle->SetLabelOffset(5.0, "y");
+
     gStyle->SetPadTopMargin(0.12);
-    gStyle->SetPadBottomMargin(0.18);
-    gStyle->SetPadRightMargin(0.12); // 2d:0.17, 1d:0.05
-    gStyle->SetPadLeftMargin(0.15);  // 2d:0.16, 1d:0.15
+    gStyle->SetPadBottomMargin(0.15);
+    gStyle->SetPadRightMargin(0.13); // 2d:0.17, 1d:0.05
+    gStyle->SetPadLeftMargin(0.18);  // 2d:0.16, 1d:0.15
     gStyle->SetLineWidth(2);
-    // gStyle->SetPadGridX(true);
-    // gStyle->SetPadGridY(true);
+
+    gStyle->SetPadGridX(true);
+    gStyle->SetPadGridY(true);
 
     TString outDir = "/Users/ahamdi/lbl/upc_loc/Phi0Ana/output_Phi0Ana";
     TFile *f_data = TFile::Open(Form("%s/Phi0Ana_data.root", outDir.Data()));
     TFile *f_mc = TFile::Open(Form("%s/Phi0Ana_mc.root", outDir.Data()));
     TFile *f_lumi = TFile::Open("/Users/ahamdi/lbl/upc_loc/Phi0Ana/lumi_ccup9.root");
-    if(f_data == nullptr || f_mc == nullptr ||  f_lumi == nullptr)
-        cout<<"something went wrong! abort!"<<endl;
+    TFile *f_effvar = TFile::Open("/Users/ahamdi/lbl/upc_loc/Phi0Ana/effvar_tpcrejection_nacer.root");
+    if(f_data == nullptr || f_mc == nullptr ||  f_lumi == nullptr || f_effvar == nullptr)
+        cout<<"something went wrong while opening root files ! abort!"<<endl;
     
     TFile *outputFile = new TFile(Form("%s/kpkmAna.root",outDir.Data()), "RECREATE");
 
     FILE *tab_sys_m = fopen(Form("%s/tab_sys_m.tex",outDir.Data()), "w");
-    fprintf(tab_sys_m,"\\documentclass[10pt]{extarticle}\n \\usepackage[margin=0.1in]{geometry}\n \\usepackage{tabularx}\n \\usepackage{caption} \n \\usepackage{makecell} \n \\usepackage{siunitx} \n \\captionsetup{labelformat=empty}\n \\begin{document}\n \\begin{table}[!htbp]\n \\centering\n \\caption{Systematic errors in pair mass bins}\n \\begin{tabular}{c|c|c|c|c|c|c}\n \\hline\n $m_{K^{+}K^{-}}$ (GeV/$c^2$) & $N_{generated}$ & $N_{MC}$ & $N_{data}$ & $\\sigma$ (mb) & \\thead{Sig/Bkg range (\\si{\\percent})\\\\(8$\\sigma^2$, 9$\\sigma^2$, 10$\\sigma^2$)} & \\thead{Reject $\\pi^\\pm, \\mu^\\pm, e^\\pm$ (\\si{\\percent})\\\\(1.75$\\sigma$, 2$\\sigma$, 2.25$\\sigma$)} \\\\ \n \\hline\n");
+    fprintf(tab_sys_m,"\\documentclass[10pt]{extarticle}\n \\usepackage[margin=0.1in]{geometry}\n \\usepackage{tabularx}\n \\usepackage{caption} \n \\usepackage{makecell} \n \\usepackage{siunitx} \n \\captionsetup{labelformat=empty}\n \\begin{document}\n \\begin{table}[!htbp]\n \\centering\n \\caption{Systematic errors in pair mass bins}\n \\begin{tabular}{c|c|c|c|c|c|c}\n \\hline\n $m_{K^{+}K^{-}}$ (GeV/$c^2$) & $N_{generated}$ & $N_{MC}$ & $N_{data}$ & $\\sigma$ (mb) & \\thead{dE/dx mean (\\si{\\percent})\\\\($\\pm$ 3 \\si{\\percent})} & \\thead{dE/dx width (\\si{\\percent})\\\\($\\pm$ 3 \\si{\\percent})} \\\\ \n \\hline\n");
+
+    // FILE *tab_eff = fopen(Form("%s/tab_eff.tex",outDir.Data()), "w");
+    // fprintf(tab_eff,"\\documentclass[10pt]{extarticle}\n \\usepackage[margin=0.1in]{geometry}\n \\usepackage{tabularx}\n \\usepackage{caption} \n \\usepackage{makecell} \n \\usepackage{siunitx} \n \\captionsetup{labelformat=empty}\n \\begin{document}\n \\begin{table}[!htbp]\n \\centering\n \\caption{Systematic errors in pair mass bins}\n \\begin{tabular}{c|c|c|c|c|c|c}\n \\hline\n $m_{K^{+}K^{-}}$ (GeV/$c^2$) & $N_{generated}$ & $N_{MC}$ & $N_{data}$ & $\\sigma$ (mb) & \\thead{Sig/Bkg range (\\si{\\percent})\\\\(3$\\sigma$ $\\pm$ 3 \\si{\\percent})} & \\thead{Reject $\\pi^\\pm, \\mu^\\pm, e^\\pm$ (\\si{\\percent})\\\\(2$\\sigma$ $\\pm$ 3 \\si{\\percent})} \\\\ \n \\hline\n");
 
     FILE *tab_sys_theta = fopen(Form("%s/tab_sys_theta.tex",outDir.Data()), "w");
-    fprintf(tab_sys_theta,"\\documentclass[10pt]{extarticle}\n \\usepackage[margin=0.1in]{geometry}\n \\usepackage{tabularx}\n \\usepackage{caption} \n \\usepackage{makecell} \n \\usepackage{siunitx} \n \\captionsetup{labelformat=empty}\n \\begin{document}\n \\begin{table}[!htbp]\n \\centering\n \\caption{Systematic errors in pair cos($\\theta$) bins}\n \\begin{tabular}{c|c|c|c|c|c|c}\n \\hline\n $cos(\\theta)$ (rad) & $N_{generated}$ & $N_{MC}$ & $N_{data}$ & $\\sigma$ (mb) & \\thead{Sig/Bkg range (\\si{\\percent})\\\\(8$\\sigma^2$, 9$\\sigma^2$, 10$\\sigma^2$)} & \\thead{Reject $\\pi^\\pm, \\mu^\\pm, e^\\pm$ (\\si{\\percent})\\\\(1.75$\\sigma$, 2$\\sigma$, 2.25$\\sigma$)} \\\\ \n \\hline\n");
+    fprintf(tab_sys_theta,"\\documentclass[10pt]{extarticle}\n \\usepackage[margin=0.1in]{geometry}\n \\usepackage{tabularx}\n \\usepackage{caption} \n \\usepackage{makecell} \n \\usepackage{siunitx} \n \\captionsetup{labelformat=empty}\n \\begin{document}\n \\begin{table}[!htbp]\n \\centering\n \\caption{Systematic errors in pair cos($\\theta$) bins}\n \\begin{tabular}{c|c|c|c|c|c|c}\n \\hline\n $cos(\\theta)$ (rad) & $N_{generated}$ & $N_{MC}$ & $N_{data}$ & $\\sigma$ (mb) & \\thead{Sig/Bkg range (\\si{\\percent})\\\\(3$\\sigma$ $\\pm$ 3 \\si{\\percent})} & \\thead{Reject $\\pi^\\pm, \\mu^\\pm, e^\\pm$ (\\si{\\percent})\\\\(2$\\sigma$ $\\pm$ 3 \\si{\\percent})} \\\\ \n \\hline\n");
     
     // Pair ransverse Momentum 
     auto cPtPair_all = new TCanvas("cPtPair_all", "cPtPair_all", 900, 600);
@@ -273,6 +280,7 @@ void kpkmAna()
     // Begin: ====================  Cross section in mass bins ====================
 
     // Invariant Mass 
+    // ------ MC
     auto cMassPairKaon_all = new TCanvas("cMassPairKaon_all", "cMassPairKaon_all", 900, 600);
     cMassPairKaon_all->cd();
     // cMassPairKaon_all->SetLogy();
@@ -281,19 +289,36 @@ void kpkmAna()
     auto hMassPairKaon_dEdxCut_mc = (TH1F *)f_mc->Get("hMassPairKaondEdxCut");
     auto hMassPairKaon_PtCut01_mc = (TH1F *)f_mc->Get("hMassPairKaonPtCut01");
     auto hMassPairKaon_RejectPionSub_mc = (TH1F *)f_mc->Get("hMassPairKaonRejectPionSub");
-    auto hMassPairKaon_RejectPionMuonSub_mc = (TH1F *)f_mc->Get("hMassPairKaonRejectPionMuonSub");
+    auto hMassPairKaon_RejectPionElectronSub_mc = (TH1F *)f_mc->Get("hMassPairKaonRejectPionElectronSub");
     auto hMassPairKaonRejectAllSub_mc = (TH1F *)f_mc->Get("hMassPairKaonRejectAllSub");
     auto hMassPairKaon_truth = (TH1F *)f_mc->Get("hMassPairKaon_truth");
+    // hMassPairKaon_mc->Rebin(6);
+    // hMassPairKaon_UnLikeCharge_mc->Rebin(6);
+    // hMassPairKaon_dEdxCut_mc->Rebin(6);
+    // hMassPairKaon_PtCut01_mc->Rebin(6);
+    // hMassPairKaon_RejectPionSub_mc->Rebin(2);
+    // hMassPairKaon_RejectPionElectronSub_mc->Rebin(2);
+    // hMassPairKaonRejectAllSub_mc->Rebin(2);
+
+    // ------ Data
+    auto hMassPairKaon_data = (TH1F *)f_data->Get("hMassPairKaon");
+    auto hMassPairKaon_UnLikeCharge_data = (TH1F *)f_data->Get("hMassPairKaonUnLikeCharge");
+    auto hMassPairKaon_dEdxCut_data = (TH1F *)f_data->Get("hMassPairKaondEdxCut");
+    auto hMassPairKaon_PtCut01_data = (TH1F *)f_data->Get("hMassPairKaonPtCut01");
+    auto hMassPairKaon_RejectPionSub_data = (TH1F *)f_data->Get("hMassPairKaonRejectPionSub");
+    auto hMassPairKaon_RejectPionElectronSub_data = (TH1F *)f_data->Get("hMassPairKaonRejectPionElectronSub");
     auto hMassPairKaonRejectAllSub_data = (TH1F *)f_data->Get("hMassPairKaonRejectAllSub");
-    hMassPairKaon_mc->Rebin(6);
-    hMassPairKaon_UnLikeCharge_mc->Rebin(6);
-    hMassPairKaon_dEdxCut_mc->Rebin(6);
-    hMassPairKaon_PtCut01_mc->Rebin(6);
-    hMassPairKaon_RejectPionSub_mc->Rebin(2);
-    hMassPairKaon_RejectPionMuonSub_mc->Rebin(2);
-    // hMassPairKaonRejectAllSub_mc->Rebin(10); //2
-    // hMassPairKaonRejectAllSub_data->Rebin(10); //2
-    // hMassPairKaon_truth->Rebin(60); // 50
+    auto hPtPairKaonRejectAllSub_data = (TH1F *)f_data->Get("hPtPairKaonRejectAllSub");
+    // hMassPairKaon_data->Rebin(6);
+    // hMassPairKaon_UnLikeCharge_data->Rebin(6);
+    // hMassPairKaon_dEdxCut_data->Rebin(6);
+    // hMassPairKaon_PtCut01_data->Rebin(6);
+    // hMassPairKaon_RejectPionSub_data->Rebin(2);
+    // hMassPairKaon_RejectPionElectronSub_data->Rebin(2);
+    // hMassPairKaonRejectAllSub_data->Rebin(2);
+
+    printf("nbins_mc = %i, nbins_UnLikeCharge_mc = %i, nbins_dEdxCut_mc = %i, nbins_PtCut01_mc = %i, nbins_RejectPionSub_mc = %i, nbins_RejectPionElectronSub_mc = %i, nbins_RejectAllSub_mc = %i \n", hMassPairKaon_mc->GetNbinsX(), hMassPairKaon_UnLikeCharge_mc->GetNbinsX(), hMassPairKaon_dEdxCut_mc->GetNbinsX(), hMassPairKaon_PtCut01_mc->GetNbinsX(), hMassPairKaon_RejectPionSub_mc->GetNbinsX(), hMassPairKaon_RejectPionElectronSub_mc->GetNbinsX(), hMassPairKaonRejectAllSub_mc->GetNbinsX());
+ 
     hMassPairKaonRejectAllSub_mc->SetMarkerColor(2);
     hMassPairKaonRejectAllSub_mc->SetLineColor(2);
     hMassPairKaon_truth->SetMarkerColor(1);
@@ -314,30 +339,82 @@ void kpkmAna()
     cMassPairKaon_all->Print(Form("%s/cMassPairKaon_all.root", outDir.Data()),"root");
     cMassPairKaon_all->Print(Form("%s/cMassPairKaon_all.pdf", outDir.Data()),"pdf");
 
+    // Yields
+    // ---- MC
+    TGraphErrors *gNsig_mc = new TGraphErrors();
+    TGraphErrors *gNsig_UnLikeCharge_mc = new TGraphErrors();
+    TGraphErrors *gNsig_dEdxCut_mc = new TGraphErrors();
+    TGraphErrors *gNsig_PtCut01_mc = new TGraphErrors();
+    TGraphErrors *gNsig_RejectPionSub_mc = new TGraphErrors();
+    TGraphErrors *gNsig_RejectPionElectronSub_mc = new TGraphErrors();
+    TGraphErrors *gNsig_RejectAllSub_mc = new TGraphErrors();
+    gNsig_mc->SetMarkerStyle(kOpenSquare);
+    gNsig_UnLikeCharge_mc->SetMarkerStyle(20);
+    gNsig_dEdxCut_mc->SetMarkerStyle(20);
+    gNsig_PtCut01_mc->SetMarkerStyle(20);
+    gNsig_RejectPionSub_mc->SetMarkerStyle(20);
+    gNsig_RejectPionElectronSub_mc->SetMarkerStyle(20);
+    gNsig_RejectAllSub_mc->SetMarkerStyle(20);
+    gNsig_mc->SetMarkerColor(kBlack);
+    gNsig_UnLikeCharge_mc->SetMarkerColor(28);
+    gNsig_dEdxCut_mc->SetMarkerColor(40);
+    gNsig_PtCut01_mc->SetMarkerColor(kRed);
+    gNsig_RejectPionSub_mc->SetMarkerColor(kGreen);
+    gNsig_RejectPionElectronSub_mc->SetMarkerColor(kMagenta);
+    gNsig_RejectAllSub_mc->SetMarkerColor(kBlue);
+    gNsig_mc->SetMinimum(0.0);
+    gNsig_mc->SetTitle(";m_{K^{+}K^{-}} (GeV/c^{2});Yield");
+
+    // ---- Data
+    TGraphErrors *gNsig_data = new TGraphErrors();
+    TGraphErrors *gNsig_UnLikeCharge_data = new TGraphErrors();
+    TGraphErrors *gNsig_dEdxCut_data = new TGraphErrors();
+    TGraphErrors *gNsig_PtCut01_data = new TGraphErrors();
+    TGraphErrors *gNsig_RejectPionSub_data = new TGraphErrors();
+    TGraphErrors *gNsig_RejectPionElectronSub_data = new TGraphErrors();
+    TGraphErrors *gNsig_RejectAllSub_data = new TGraphErrors();
+    gNsig_data->SetMarkerStyle(kOpenSquare);
+    gNsig_UnLikeCharge_data->SetMarkerStyle(20);
+    gNsig_dEdxCut_data->SetMarkerStyle(20);
+    gNsig_PtCut01_data->SetMarkerStyle(20);
+    gNsig_RejectPionSub_data->SetMarkerStyle(20);
+    gNsig_RejectPionElectronSub_data->SetMarkerStyle(20);
+    gNsig_RejectAllSub_data->SetMarkerStyle(20);
+    gNsig_data->SetMarkerColor(kBlack);
+    gNsig_UnLikeCharge_data->SetMarkerColor(28);
+    gNsig_dEdxCut_data->SetMarkerColor(40);
+    gNsig_PtCut01_data->SetMarkerColor(kRed);
+    gNsig_RejectPionSub_data->SetMarkerColor(kGreen);
+    gNsig_RejectPionElectronSub_data->SetMarkerColor(kMagenta);
+    gNsig_RejectAllSub_data->SetMarkerColor(kBlue);
+    gNsig_data->SetMinimum(0.0);
+    gNsig_data->SetTitle(";m_{K^{+}K^{-}} (GeV/c^{2});Yield");
+    gNsig_RejectAllSub_data->SetTitle(";m_{K^{+}K^{-}} (GeV/c^{2});Yield");
+
     // Efficiency
     TGraphErrors *gEff = new TGraphErrors();
     TGraphErrors *gEff_UnLikeCharge = new TGraphErrors();
     TGraphErrors *gEff_dEdxCut = new TGraphErrors();
     TGraphErrors *gEff_PtCut01 = new TGraphErrors();
     TGraphErrors *gEff_RejectPionSub = new TGraphErrors();
-    TGraphErrors *gEff_RejectPionMuonSub = new TGraphErrors();
+    TGraphErrors *gEff_RejectPionElectronSub = new TGraphErrors();
     TGraphErrors *gEff_RejectAllSub = new TGraphErrors();
     gEff->SetMarkerStyle(kOpenSquare);
     gEff_UnLikeCharge->SetMarkerStyle(20);
     gEff_dEdxCut->SetMarkerStyle(20);
     gEff_PtCut01->SetMarkerStyle(20);
     gEff_RejectPionSub->SetMarkerStyle(20);
-    gEff_RejectPionMuonSub->SetMarkerStyle(20);
+    gEff_RejectPionElectronSub->SetMarkerStyle(20);
     gEff_RejectAllSub->SetMarkerStyle(20);
     gEff->SetMarkerColor(kBlack);
     gEff_UnLikeCharge->SetMarkerColor(28);
     gEff_dEdxCut->SetMarkerColor(40);
     gEff_PtCut01->SetMarkerColor(kRed);
     gEff_RejectPionSub->SetMarkerColor(kGreen);
-    gEff_RejectPionMuonSub->SetMarkerColor(kMagenta);
+    gEff_RejectPionElectronSub->SetMarkerColor(kMagenta);
     gEff_RejectAllSub->SetMarkerColor(kBlue);
     gEff->SetMinimum(0.0);
-    gEff->SetTitle("; m_{K^{+}K^{-}} (GeV/c^{2}); Efficiency (%)");
+    gEff->SetTitle(";m_{K^{+}K^{-}} (GeV/c^{2});Efficiency (%)");
 
     // Cross Section
     TGraphErrors *gkpkmXSection = new TGraphErrors();
@@ -345,7 +422,15 @@ void kpkmAna()
     // gkpkmXSection->SetMarkerSize(1.5);
     gkpkmXSection->SetMarkerColor(kBlue);
     gkpkmXSection->SetMinimum(0.0);
-    gkpkmXSection->SetTitle("; m_{K^{+}K^{-}} (GeV/c^{2}); Cross Section (mb)");
+    gkpkmXSection->SetTitle("; m_{K^{+}K^{-}} (GeV/c^{2}); Cross Section (mb/GeV)");
+
+    // Pair Pt after Bkg sub
+    TGraphErrors *gPairPtsub = new TGraphErrors();
+    gPairPtsub->SetMarkerStyle(20);
+    // gPairPtsub->SetMarkerSize(1.5);
+    gPairPtsub->SetMarkerColor(kBlue);
+    gPairPtsub->SetMinimum(0.0);
+    gPairPtsub->SetTitle("; Pair P_{T} (GeV/c); Yield");
 
     // residual
     TGraph *gresidual = new TGraph();
@@ -354,41 +439,160 @@ void kpkmAna()
     gresidual->SetMinimum(0.0);
     gresidual->SetTitle("; m_{K^{+}K^{-}} (GeV/c^{2}); N_{Truth} - N_{Reco} (GeV/c^{2})");
 
+    // -------- TPC dE/dx mean and width variations
+
+    auto cEffVar = new TCanvas("cEffVar", "cEffVar", 900, 600);
+    cEffVar->cd();
+    auto hacceff_mkk_0 = (TH1D *)f_effvar->Get("hacceff_mkk_0");
+    auto hacceff_mkk_1 = (TH1D *)f_effvar->Get("hacceff_mkk_1");
+    auto hacceff_mkk_2 = (TH1D *)f_effvar->Get("hacceff_mkk_2");
+    auto hacceff_mkk_3 = (TH1D *)f_effvar->Get("hacceff_mkk_3");
+    auto hacceff_mkk_4 = (TH1D *)f_effvar->Get("hacceff_mkk_4");
+
+    // hacceff_mkk_0->Rebin(2);
+    // hacceff_mkk_1->Rebin(2);
+    // hacceff_mkk_2->Rebin(2);
+    // hacceff_mkk_3->Rebin(2);
+    // hacceff_mkk_4->Rebin(2);
+
+    printf("hacceff_mkk_0 = %i, hacceff_mkk_1 = %i, hacceff_mkk_2 = %i, hacceff_mkk_3 = %i, hacceff_mkk_4 = %i \n", hacceff_mkk_0->GetNbinsX(), hacceff_mkk_1->GetNbinsX(), hacceff_mkk_2->GetNbinsX(), hacceff_mkk_3->GetNbinsX(), hacceff_mkk_4->GetNbinsX());
+ 
+    hacceff_mkk_0->SetMarkerColor(1);
+    hacceff_mkk_0->SetLineColor(1);
+    hacceff_mkk_1->SetMarkerColor(2);
+    hacceff_mkk_1->SetMarkerStyle(kOpenSquare);
+    hacceff_mkk_2->SetMarkerColor(4);
+    hacceff_mkk_2->SetMarkerStyle(kFullSquare);
+    hacceff_mkk_3->SetMarkerColor(6);
+    hacceff_mkk_3->SetMarkerStyle(kOpenCircle);
+    hacceff_mkk_4->SetMarkerColor(8);
+    hacceff_mkk_4->SetMarkerStyle(kFullCircle);
+    hacceff_mkk_0->Draw("e");
+    hacceff_mkk_1->Draw("esame");
+    hacceff_mkk_2->Draw("esame");
+    hacceff_mkk_3->Draw("esame");
+    hacceff_mkk_4->Draw("esame");
+    auto l_effvar = new TLegend(0.65, 0.70, 0.75, 0.85);
+    l_effvar->SetTextSize(0.03);
+    l_effvar->SetBorderSize(0);
+    l_effvar->AddEntry(hacceff_mkk_0, "base", "p");
+    l_effvar->AddEntry(hacceff_mkk_1, "<dE/dx> + 3%", "p");
+    l_effvar->AddEntry(hacceff_mkk_2, "<dE/dx> - 3%", "p");
+    l_effvar->AddEntry(hacceff_mkk_3, "#sigma_{dE/dx} + 3%", "p");
+    l_effvar->AddEntry(hacceff_mkk_4, "#sigma_{dE/dx} - 3%", "p");
+    l_effvar->Draw();
+    hacceff_mkk_0->Write("hacceff_mkk_0", TObject::kWriteDelete);
+    hacceff_mkk_1->Write("hacceff_mkk_1", TObject::kWriteDelete);
+    hacceff_mkk_2->Write("hacceff_mkk_2", TObject::kWriteDelete);
+    hacceff_mkk_3->Write("hacceff_mkk_3", TObject::kWriteDelete);
+    hacceff_mkk_4->Write("hacceff_mkk_4", TObject::kWriteDelete);
+    cEffVar->Print(Form("%s/cEffVar.root", outDir.Data()),"root");
+    cEffVar->Print(Form("%s/cEffVar.pdf", outDir.Data()),"pdf");
+
     // =================== Systematic Errors ====================
+
     const Int_t n_m2k = hMassPairKaonRejectAllSub_mc->GetNbinsX();
     Double_t x_m2k[n_m2k], y_m2k[n_m2k], exl_m2k[n_m2k], exh_m2k[n_m2k], eylstat_m2k[n_m2k], eyhstat_m2k[n_m2k], eylsys_m2k[n_m2k], eyhsys_m2k[n_m2k];
 
-    double xsec_optimal[]              = {23.821, 5.533, 1.558}; // rad: 9; reject: 2
-    double xsec_rad8[]                 = {24.014, 4.867, 1.569}; // regions: 8
-    double xsec_rad10[]                = {23.711, 5.514, 1.553}; // regions: 10
-    double xsec_rejectLessStd[]        = {23.736, 6.524, 2.233}; // 1.75
-    double xsec_rejectMoreStd[]        = {25.328, 6.940, 2.297}; // 2.25
+    // --- cross section for diff dE/dx variation
+    auto hxsecdEdxVar_0  = new TProfile("hxsecdEdxVar_0","; m_{K^{+}K^{-}} (GeV/c^{2});d#sigma/dm (mb/GeV)",n_m2k,1.1,1.6,-500,500);
+    auto hxsecdEdxVar_1  = new TProfile("hxsecdEdxVar_1","; m_{K^{+}K^{-}} (GeV/c^{2});d#sigma/dm (mb/GeV)",n_m2k,1.1,1.6,-500,500);
+    auto hxsecdEdxVar_2  = new TProfile("hxsecdEdxVar_2","; m_{K^{+}K^{-}} (GeV/c^{2});d#sigma/dm (mb/GeV)",n_m2k,1.1,1.6,-500,500);
+    auto hxsecdEdxVar_3  = new TProfile("hxsecdEdxVar_3","; m_{K^{+}K^{-}} (GeV/c^{2});d#sigma/dm (mb/GeV)",n_m2k,1.1,1.6,-500,500);
+    auto hxsecdEdxVar_4  = new TProfile("hxsecdEdxVar_4","; m_{K^{+}K^{-}} (GeV/c^{2});d#sigma/dm (mb/GeV)",n_m2k,1.1,1.6,-500,500);
 
-    for (Int_t i = 0; i < hMassPairKaonRejectAllSub_mc->GetNbinsX(); ++i)
+    // --- Relative error of PID selection
+    auto hEffVarRatio_1  = new TProfile("hEffVarRatio_1","; m_{K^{+}K^{-}} (GeV/c^{2}); rel. diff.",n_m2k,1.1,1.6,-20,20);
+    auto hEffVarRatio_2  = new TProfile("hEffVarRatio_2","; m_{K^{+}K^{-}} (GeV/c^{2}); rel. diff.",n_m2k,1.1,1.6,-20,20);
+    auto hEffVarRatio_3  = new TProfile("hEffVarRatio_3","; m_{K^{+}K^{-}} (GeV/c^{2}); rel. diff.",n_m2k,1.1,1.6,-20,20);
+    auto hEffVarRatio_4  = new TProfile("hEffVarRatio_4","; m_{K^{+}K^{-}} (GeV/c^{2}); rel. diff.",n_m2k,1.1,1.6,-20,20);
+
+    double xsec_optimal[]              = {23.821, 5.533, 1.558}; // rad: 9; reject: 2
+    double xsec_rad8[]                 = {23.852, 5.537, 1.560}; // regions: 8
+    double xsec_rad10[]                = {23.791, 5.531, 1.557}; // regions: 10
+    double xsec_rejectLessStd[]        = {23.636, 4.638, 1.492}; // 1.75
+    double xsec_rejectMoreStd[]        = {24.008, 5.753, 1.631}; // 2.25
+
+    // all
+    // double err_xsec_dEdx_mean[5] = {0.012381, 0.072927, 0.134824, 0.045944, 0.013546}; 
+    // double err_xsec_dEdx_width[5] = {0.000960, 0.007780, 0.061392, 0.043450, 0.010984};
+
+    // without muon reject
+    double err_xsec_dEdx_mean[5] = {0.012381, 0.072927, 0.145745, 0.030308, 0.056658}; 
+    double err_xsec_dEdx_width[5] = {0.000960, 0.007780, 0.075684, 0.032077, 0.029141};
+
+    for (Int_t i = 0; i < n_m2k; ++i)
     {
-        double eff = 0, deff = 0, eff_UnLikeCharge = 0, deff_UnLikeCharge = 0, eff_dEdxCut = 0, deff_dEdxCut = 0, eff_PtCut01 = 0, deff_PtCut01 = 0, eff_RejectPionSub = 0, deff_RejectPionSub = 0, eff_RejectPionMuonSub = 0, deff_RejectPionMuonSub = 0, eff_RejectAllSub = 0, deff_RejectAllSub = 0, xsec_kpkm = 0, dxsec_kpkm_stat = 0;
-        double lumi_kpkm = 505; // milli barn^{-1}
+        double eff = 0, deff = 0, eff_UnLikeCharge = 0, deff_UnLikeCharge = 0, eff_dEdxCut = 0, deff_dEdxCut = 0, eff_PtCut01 = 0, deff_PtCut01 = 0, eff_RejectPionSub = 0, deff_RejectPionSub = 0, eff_RejectPionElectronSub = 0, deff_RejectPionElectronSub = 0, eff_RejectAllSub = 0, deff_RejectAllSub = 0, xsec_kpkm = 0, dxsec_kpkm_stat = 0;
+        double lumi_kpkm = 419; // milli barn^{-1}, 505, 0.418779
         double fpileup = 1.111; // from Rho(770) analysis
-        double Nsig_data = hMassPairKaonRejectAllSub_data->GetBinContent(i+1);
-        double dNsig_data = hMassPairKaonRejectAllSub_data->GetBinError(i+1);
         double Nsig_truth = hMassPairKaon_truth->GetBinContent(i+1);
+        double kpkmMass = hMassPairKaonRejectAllSub_mc->GetXaxis()->GetBinCenter(i+1);
+        double dm = hMassPairKaonRejectAllSub_data->GetXaxis()->GetBinWidth(i+1);
+
+        // --- MC
         double Nsig_mc = hMassPairKaon_mc->GetBinContent(i+1);
         double Nsig_UnLikeCharge_mc = hMassPairKaon_UnLikeCharge_mc->GetBinContent(i+1);
         double Nsig_dEdxCut_mc = hMassPairKaon_dEdxCut_mc->GetBinContent(i+1);
         double Nsig_PtCut01_mc = hMassPairKaon_PtCut01_mc->GetBinContent(i+1);
         double Nsig_RejectPionSub_mc = hMassPairKaon_RejectPionSub_mc->GetBinContent(i+1);
-        double Nsig_RejectPionMuonSub_mc = hMassPairKaon_RejectPionMuonSub_mc->GetBinContent(i+1);
+        double Nsig_RejectPionElectronSub_mc = hMassPairKaon_RejectPionElectronSub_mc->GetBinContent(i+1);
         double Nsig_RejectAllSub_mc = hMassPairKaonRejectAllSub_mc->GetBinContent(i+1);
         double dNsig_mc = hMassPairKaon_mc->GetBinError(i+1);
         double dNsig_UnLikeCharge_mc = hMassPairKaon_UnLikeCharge_mc->GetBinError(i+1);
         double dNsig_dEdxCut_mc = hMassPairKaon_dEdxCut_mc->GetBinError(i+1);
         double dNsig_PtCut01_mc = hMassPairKaon_PtCut01_mc->GetBinError(i+1);
         double dNsig_RejectPionSub_mc = hMassPairKaon_RejectPionSub_mc->GetBinError(i+1);
-        double dNsig_RejectPionMuonSub_mc = hMassPairKaon_RejectPionMuonSub_mc->GetBinError(i+1);
+        double dNsig_RejectPionElectronSub_mc = hMassPairKaon_RejectPionElectronSub_mc->GetBinError(i+1);
         double dNsig_RejectAllSub_mc = hMassPairKaonRejectAllSub_mc->GetBinError(i+1);
-        double kpkmMass = hMassPairKaonRejectAllSub_mc->GetXaxis()->GetBinCenter(i+1);
         double diffMcTruth = Nsig_truth - Nsig_RejectAllSub_mc;
-        double dm = hMassPairKaonRejectAllSub_data->GetXaxis()->GetBinWidth(i+1);
+
+        // --- data
+        double Nsig_data = hMassPairKaon_data->GetBinContent(i+1);
+        double Nsig_UnLikeCharge_data = hMassPairKaon_UnLikeCharge_data->GetBinContent(i+1);
+        double Nsig_dEdxCut_data = hMassPairKaon_dEdxCut_data->GetBinContent(i+1);
+        double Nsig_PtCut01_data = hMassPairKaon_PtCut01_data->GetBinContent(i+1);
+        double Nsig_RejectPionSub_data = hMassPairKaon_RejectPionSub_data->GetBinContent(i+1);
+        double Nsig_RejectPionElectronSub_data = hMassPairKaon_RejectPionElectronSub_data->GetBinContent(i+1);
+        double Nsig_RejectAllSub_data = hMassPairKaonRejectAllSub_data->GetBinContent(i+1);
+        double Nsig_RejectAllSub_Pt_data = hPtPairKaonRejectAllSub_data->GetBinContent(i+1);
+        double dNsig_data = hMassPairKaon_data->GetBinError(i+1);
+        double dNsig_UnLikeCharge_data = hMassPairKaon_UnLikeCharge_data->GetBinError(i+1);
+        double dNsig_dEdxCut_data = hMassPairKaon_dEdxCut_data->GetBinError(i+1);
+        double dNsig_PtCut01_data = hMassPairKaon_PtCut01_data->GetBinError(i+1);
+        double dNsig_RejectPionSub_data = hMassPairKaon_RejectPionSub_data->GetBinError(i+1);
+        double dNsig_RejectPionElectronSub_data = hMassPairKaon_RejectPionElectronSub_data->GetBinError(i+1);
+        double dNsig_RejectAllSub_data = hMassPairKaonRejectAllSub_data->GetBinError(i+1);
+        double dNsig_RejectAllSub_Pt_data = hPtPairKaonRejectAllSub_data->GetBinError(i+1);
+
+        // --- efficiency after TPC dE/dx variation
+        double effVar_0 = hacceff_mkk_0->GetBinContent(i+1);
+        double effVar_1 = hacceff_mkk_1->GetBinContent(i+1);
+        double effVar_2 = hacceff_mkk_2->GetBinContent(i+1);
+        double effVar_3 = hacceff_mkk_3->GetBinContent(i+1);
+        double effVar_4 = hacceff_mkk_4->GetBinContent(i+1);
+
+        double xsec_effVar_0 = (Nsig_RejectAllSub_data * fpileup) / (effVar_0 * lumi_kpkm * dm);
+        double xsec_effVar_1 = (Nsig_RejectAllSub_data * fpileup) / (effVar_1 * lumi_kpkm * dm);
+        double xsec_effVar_2 = (Nsig_RejectAllSub_data * fpileup) / (effVar_2 * lumi_kpkm * dm);
+        double xsec_effVar_3 = (Nsig_RejectAllSub_data * fpileup) / (effVar_3 * lumi_kpkm * dm);
+        double xsec_effVar_4 = (Nsig_RejectAllSub_data * fpileup) / (effVar_4 * lumi_kpkm * dm);
+
+        hxsecdEdxVar_0->Fill(kpkmMass, xsec_effVar_0);
+        hxsecdEdxVar_1->Fill(kpkmMass, xsec_effVar_1);
+        hxsecdEdxVar_2->Fill(kpkmMass, xsec_effVar_2);
+        hxsecdEdxVar_3->Fill(kpkmMass, xsec_effVar_3);
+        hxsecdEdxVar_4->Fill(kpkmMass, xsec_effVar_4);
+
+        double xsec_effVarRatio_1 = (xsec_effVar_1 - xsec_effVar_0)/xsec_effVar_0;
+        double xsec_effVarRatio_2 = (xsec_effVar_2 - xsec_effVar_0)/xsec_effVar_0;
+        double xsec_effVarRatio_3 = (xsec_effVar_3 - xsec_effVar_0)/xsec_effVar_0;
+        double xsec_effVarRatio_4 = (xsec_effVar_4 - xsec_effVar_0)/xsec_effVar_0;
+
+        hEffVarRatio_1->Fill(kpkmMass, xsec_effVarRatio_1);
+        hEffVarRatio_2->Fill(kpkmMass, xsec_effVarRatio_2);
+        hEffVarRatio_3->Fill(kpkmMass, xsec_effVarRatio_3);
+        hEffVarRatio_4->Fill(kpkmMass, xsec_effVarRatio_4);
 
         if(Nsig_truth != 0)
         {
@@ -417,10 +621,10 @@ void kpkmAna()
                 eff_RejectPionSub = Nsig_RejectPionSub_mc / Nsig_truth;
                 deff_RejectPionSub = eff_RejectPionSub * (dNsig_RejectPionSub_mc / Nsig_RejectPionSub_mc);
             }
-            if (Nsig_RejectPionMuonSub_mc != 0)
+            if (Nsig_RejectPionElectronSub_mc != 0)
             {
-                eff_RejectPionMuonSub = Nsig_RejectPionMuonSub_mc / Nsig_truth;
-                deff_RejectPionMuonSub = eff_RejectPionMuonSub * (dNsig_RejectPionMuonSub_mc / Nsig_RejectPionMuonSub_mc);
+                eff_RejectPionElectronSub = Nsig_RejectPionElectronSub_mc / Nsig_truth;
+                deff_RejectPionElectronSub = eff_RejectPionElectronSub * (dNsig_RejectPionElectronSub_mc / Nsig_RejectPionElectronSub_mc);
             }
             if (Nsig_RejectAllSub_mc != 0)
             {
@@ -428,10 +632,10 @@ void kpkmAna()
                 deff_RejectAllSub = eff_RejectAllSub * (dNsig_RejectAllSub_mc / Nsig_RejectAllSub_mc);
             }
 
-            // if(eff_RejectAllSub != 0 && Nsig_data != 0)
+            // if(eff_RejectAllSub != 0 && Nsig_RejectAllSub_data != 0)
             // {
-            //     xsec_kpkm = (Nsig_data * fpileup) / (eff_RejectAllSub * lumi_kpkm);
-            //     dxsec_kpkm_stat = xsec_kpkm * (dNsig_data / Nsig_data);
+            //     xsec_kpkm = (Nsig_RejectAllSub_data * fpileup) / (eff_RejectAllSub * lumi_kpkm);
+            //     dxsec_kpkm_stat = xsec_kpkm * (dNsig_RejectAllSub_data / Nsig_RejectAllSub_data);
             // }
             // else
             // {
@@ -457,9 +661,9 @@ void kpkmAna()
         // deff = eff * (dNsig_mc / Nsig_mc);
 
         // =================== Systematic Errors ====================
-        double xsec_rad[]            = {xsec_optimal[i], xsec_rad8[i], xsec_rad10[i]};
-        double xsec_reject[] = {xsec_optimal[i], xsec_rejectMoreStd[i], xsec_rejectLessStd[i]};
-        double err_xsec_rad            = TMath::RMS(3, xsec_rad)/xsec_optimal[i];
+        double xsec_rad[]      = {xsec_optimal[i], xsec_rad8[i], xsec_rad10[i]};
+        double xsec_reject[]   = {xsec_optimal[i], xsec_rejectMoreStd[i], xsec_rejectLessStd[i]};
+        double err_xsec_rad    = TMath::RMS(3, xsec_rad)/xsec_optimal[i];
         double err_xsec_reject = TMath::RMS(3, xsec_reject)/xsec_optimal[i];
 
         // from rho0 analysis
@@ -471,10 +675,10 @@ void kpkmAna()
         double err_PileUp  = 0.038;
         double err_Lumi  = 0.050;
 
-        double err_sys = TMath::Sqrt(err_xsec_rad*err_xsec_rad + err_xsec_reject*err_xsec_reject + err_trk_select*err_trk_select + err_trk_match*err_trk_match + err_trk_eff*err_trk_eff + err_incoh*err_incoh + err_SPD_chip*err_SPD_chip + err_PileUp*err_PileUp + err_Lumi*err_Lumi);
+        double err_sys = TMath::Sqrt(err_xsec_dEdx_mean[i]*err_xsec_dEdx_mean[i] + err_xsec_dEdx_width[i]*err_xsec_dEdx_width[i] + err_trk_select*err_trk_select + err_trk_match*err_trk_match + err_trk_eff*err_trk_eff + err_incoh*err_incoh + err_SPD_chip*err_SPD_chip + err_PileUp*err_PileUp + err_Lumi*err_Lumi);
 
-        xsec_kpkm = (Nsig_data * fpileup) / (eff_RejectAllSub * lumi_kpkm * dm);
-        dxsec_kpkm_stat = xsec_kpkm * (dNsig_data / Nsig_data);
+        xsec_kpkm = (Nsig_RejectAllSub_data * fpileup) / (eff_RejectAllSub * lumi_kpkm * dm);
+        dxsec_kpkm_stat = xsec_kpkm * (dNsig_RejectAllSub_data / Nsig_RejectAllSub_data);
         double dxsec_phi2pi_sys = xsec_kpkm * TMath::Sqrt((err_sys*err_sys));
 
         // x_m2k[i] = {-999};
@@ -491,37 +695,253 @@ void kpkmAna()
         eylsys_m2k[i]  = dxsec_phi2pi_sys;
         eyhsys_m2k[i]  = dxsec_phi2pi_sys;
 
-        fprintf(tab_sys_m, "(%0.2f , %0.2f) & %0.f & %0.f & %0.f & %0.2f$\\pm$%0.2f$\\pm$%0.2f & %0.2f & %0.2f \\\\ \n", ymin, ymax, Nsig_truth, Nsig_RejectAllSub_mc, Nsig_data, xsec_kpkm, dxsec_kpkm_stat, dxsec_phi2pi_sys, err_xsec_rad * 100, err_xsec_reject * 100);
+        fprintf(tab_sys_m, "(%0.2f , %0.2f) & %0.f & %0.f & %0.f & %0.2f$\\pm$%0.2f$\\pm$%0.2f & %0.2f & %0.2f \\\\ \n", ymin, ymax, Nsig_truth, Nsig_RejectAllSub_mc, Nsig_RejectAllSub_data, xsec_kpkm, dxsec_kpkm_stat, dxsec_phi2pi_sys, err_xsec_dEdx_mean[i] * 100, err_xsec_dEdx_width[i] * 100);
 
+        // fprintf(tab_eff, "(%0.2f , %0.2f) & %0.f & %0.f & %0.f & %0.2f$\\pm$%0.2f$\\pm$%0.2f & %0.2f & %0.2f \\\\ \n", ymin, ymax, Nsig_truth, Nsig_RejectAllSub_mc, Nsig_RejectAllSub_data, xsec_kpkm, dxsec_kpkm_stat, dxsec_phi2pi_sys, err_xsec_rad * 100, err_xsec_reject * 100);
+
+        // efficiency
         gEff->SetPoint(i, kpkmMass, eff * 100);
         gEff_UnLikeCharge->SetPoint(i, kpkmMass, eff_UnLikeCharge * 100);
         gEff_dEdxCut->SetPoint(i, kpkmMass, eff_dEdxCut * 100);
         gEff_PtCut01->SetPoint(i, kpkmMass, eff_PtCut01 * 100);
         gEff_RejectPionSub->SetPoint(i, kpkmMass, eff_RejectPionSub * 100);
-        gEff_RejectPionMuonSub->SetPoint(i, kpkmMass, eff_RejectPionMuonSub * 100);
+        gEff_RejectPionElectronSub->SetPoint(i, kpkmMass, eff_RejectPionElectronSub * 100);
         gEff_RejectAllSub->SetPoint(i, kpkmMass, eff_RejectAllSub * 100);
-
         gEff->SetPointError(i, 0, deff * 100);
         gEff_UnLikeCharge->SetPointError(i, 0, deff_UnLikeCharge * 100);
         gEff_dEdxCut->SetPointError(i, 0, deff_dEdxCut * 100);
         gEff_PtCut01->SetPointError(i, 0, deff_PtCut01 * 100);
         gEff_RejectPionSub->SetPointError(i, 0, deff_RejectPionSub * 100);
-        gEff_RejectPionMuonSub->SetPointError(i, 0, deff_RejectPionMuonSub * 100);
+        gEff_RejectPionElectronSub->SetPointError(i, 0, deff_RejectPionElectronSub * 100);
         gEff_RejectAllSub->SetPointError(i, 0, deff_RejectAllSub * 100);
+
+        // Yield
+        // ---- MC
+        gNsig_mc->SetPoint(i, kpkmMass, Nsig_mc);
+        gNsig_UnLikeCharge_mc->SetPoint(i, kpkmMass, Nsig_UnLikeCharge_mc);
+        gNsig_dEdxCut_mc->SetPoint(i, kpkmMass, Nsig_dEdxCut_mc);
+        gNsig_PtCut01_mc->SetPoint(i, kpkmMass, Nsig_PtCut01_mc);
+        gNsig_RejectPionSub_mc->SetPoint(i, kpkmMass, Nsig_RejectPionSub_mc);
+        gNsig_RejectPionElectronSub_mc->SetPoint(i, kpkmMass, Nsig_RejectPionElectronSub_mc);
+        gNsig_RejectAllSub_mc->SetPoint(i, kpkmMass, Nsig_RejectAllSub_mc);
+        gNsig_mc->SetPointError(i, 0, dNsig_mc);
+        gNsig_UnLikeCharge_mc->SetPointError(i, 0, dNsig_UnLikeCharge_mc);
+        gNsig_dEdxCut_mc->SetPointError(i, 0, dNsig_dEdxCut_mc);
+        gNsig_PtCut01_mc->SetPointError(i, 0, dNsig_PtCut01_mc);
+        gNsig_RejectPionSub_mc->SetPointError(i, 0, dNsig_RejectPionSub_mc);
+        gNsig_RejectPionElectronSub_mc->SetPointError(i, 0, dNsig_RejectPionElectronSub_mc);
+        gNsig_RejectAllSub_mc->SetPointError(i, 0, dNsig_RejectAllSub_mc);
+
+        // ---- Data
+        gNsig_data->SetPoint(i, kpkmMass, Nsig_data);
+        gNsig_UnLikeCharge_data->SetPoint(i, kpkmMass, Nsig_UnLikeCharge_data);
+        gNsig_dEdxCut_data->SetPoint(i, kpkmMass, Nsig_dEdxCut_data);
+        gNsig_PtCut01_data->SetPoint(i, kpkmMass, Nsig_PtCut01_data);
+        gNsig_RejectPionSub_data->SetPoint(i, kpkmMass, Nsig_RejectPionSub_data);
+        gNsig_RejectPionElectronSub_data->SetPoint(i, kpkmMass, Nsig_RejectPionElectronSub_data);
+        gNsig_RejectAllSub_data->SetPoint(i, kpkmMass, Nsig_RejectAllSub_data);
+        gNsig_data->SetPointError(i, 0, dNsig_data);
+        gNsig_UnLikeCharge_data->SetPointError(i, 0, dNsig_UnLikeCharge_data);
+        gNsig_dEdxCut_data->SetPointError(i, 0, dNsig_dEdxCut_data);
+        gNsig_PtCut01_data->SetPointError(i, 0, dNsig_PtCut01_data);
+        gNsig_RejectPionSub_data->SetPointError(i, 0, dNsig_RejectPionSub_data);
+        gNsig_RejectPionElectronSub_data->SetPointError(i, 0, dNsig_RejectPionElectronSub_data);
+        gNsig_RejectAllSub_data->SetPointError(i, 0, dNsig_RejectAllSub_data);
+
+        gPairPtsub->SetPoint(i, kpkmMass, Nsig_RejectAllSub_Pt_data);
+        gPairPtsub->SetPointError(i, 0, dNsig_RejectAllSub_Pt_data);
 
         gkpkmXSection->SetPoint(i, kpkmMass, xsec_kpkm);
         gkpkmXSection->SetPointError(i, 0, dxsec_kpkm_stat);
 
         gresidual->SetPoint(i, kpkmMass, diffMcTruth);
 
-        printf("i = %d, ymin = %f, ymax = %f, Nsig_data = %f, eff_RejectAllSub = %f, x_m2k = %f, y_m2k = %f, eylstat_m2k = %f, eylsys_m2k = %f \n", i, ymin, ymax, Nsig_data, eff_RejectAllSub, x_m2k[i], y_m2k[i], eylstat_m2k[i], eylsys_m2k[i]);
+        // printf("i = %d, ymin = %f, ymax = %f, Nsig_RejectAllSub_data = %f, eff_RejectAllSub = %f, x_m2k = %f, y_m2k = %f, eylstat_m2k = %f, eylsys_m2k = %f \n", i, ymin, ymax, Nsig_RejectAllSub_data, eff_RejectAllSub, x_m2k[i], y_m2k[i], eylstat_m2k[i], eylsys_m2k[i]);
 
-        // printf(" ####### i, ymin, ymaxt = %d, %0.3f , %0.3f \n", i, ymin, ymax);
+        printf(" ####### i, ymin, ymaxt = %d, %0.3f , %0.3f \n", i, ymin, ymax);
+        printf(" ####### xsec_effVar = %0.3f, %0.3f, %0.3f, %0.3f, %0.3f \n", xsec_effVar_0, xsec_effVar_1, xsec_effVar_2, xsec_effVar_3, xsec_effVar_4);
         // printf(" ####### dxsec_kpkm_stat = %0.3f \n", dxsec_kpkm_stat);
         // printf(" ####### dxsec_phi2pi_sys = %0.3f \n", dxsec_phi2pi_sys);
         // printf(" ####### i, dm = %d, %f\n", i, dm);
     }
 
+    // --- TPC dE/dx systematics
+    auto cEffVarRatio = new TCanvas("cEffVarRatio", "cEffVarRatio", 900, 600);
+    cEffVarRatio->cd();
+    hEffVarRatio_1->SetMarkerColor(2);
+    hEffVarRatio_1->SetMarkerStyle(kOpenSquare);
+    hEffVarRatio_2->SetMarkerColor(4);
+    hEffVarRatio_2->SetMarkerStyle(kFullSquare);
+    hEffVarRatio_2->SetMinimum(-0.3);
+    hEffVarRatio_2->SetMaximum(0.3);
+    hEffVarRatio_3->SetMarkerColor(6);
+    hEffVarRatio_3->SetMarkerStyle(kOpenCircle);
+    hEffVarRatio_4->SetMarkerColor(8);
+    hEffVarRatio_4->SetMarkerStyle(kFullCircle);
+    hEffVarRatio_2->Rebin(20);
+    hEffVarRatio_1->Rebin(20);
+    hEffVarRatio_3->Rebin(20);
+    hEffVarRatio_4->Rebin(20);
+    hEffVarRatio_2->Draw("P");
+    hEffVarRatio_1->Draw("PSAME");
+    hEffVarRatio_3->Draw("PSAME");
+    hEffVarRatio_4->Draw("PSAME");
+    auto l_effvarRatio = new TLegend(0.25, 0.75, 0.35, 0.85);
+    l_effvarRatio->SetTextSize(0.03);
+    l_effvarRatio->SetBorderSize(0);
+    l_effvarRatio->AddEntry(hEffVarRatio_1, "<dE/dx> + 3%", "p");
+    l_effvarRatio->AddEntry(hEffVarRatio_2, "<dE/dx> - 3%", "p");
+    l_effvarRatio->AddEntry(hEffVarRatio_3, "#sigma_{dE/dx} + 3%", "p");
+    l_effvarRatio->AddEntry(hEffVarRatio_4, "#sigma_{dE/dx} - 3%", "p");
+    l_effvarRatio->Draw();
+    hEffVarRatio_1->Write("hEffVarRatio_1", TObject::kWriteDelete);
+    hEffVarRatio_2->Write("hEffVarRatio_2", TObject::kWriteDelete);
+    hEffVarRatio_3->Write("hEffVarRatio_3", TObject::kWriteDelete);
+    hEffVarRatio_4->Write("hEffVarRatio_4", TObject::kWriteDelete);
+    cEffVarRatio->Print(Form("%s/cEffVarRatio.root", outDir.Data()),"root");
+    cEffVarRatio->Print(Form("%s/cEffVarRatio.pdf", outDir.Data()),"pdf");
+
+    // --- Cross section for diff TPC dE/dx variations
+    auto cxsecdEdxVar = new TCanvas("cxsecdEdxVar", "cxsecdEdxVar", 900, 600);
+    cxsecdEdxVar->cd();
+    hxsecdEdxVar_0->SetMarkerColor(1);
+    hxsecdEdxVar_0->SetMarkerStyle(kFullCircle);
+    hxsecdEdxVar_1->SetMarkerColor(2);
+    hxsecdEdxVar_1->SetMarkerStyle(kOpenSquare);
+    hxsecdEdxVar_2->SetMarkerColor(4);
+    hxsecdEdxVar_2->SetMarkerStyle(kFullSquare);
+    // hxsecdEdxVar_2->SetMinimum(-1);
+    // hxsecdEdxVar_2->SetMaximum(1);
+    hxsecdEdxVar_3->SetMarkerColor(6);
+    hxsecdEdxVar_3->SetMarkerStyle(kOpenCircle);
+    hxsecdEdxVar_4->SetMarkerColor(8);
+    hxsecdEdxVar_4->SetMarkerStyle(kFullCircle);
+    hxsecdEdxVar_0->Rebin(20);
+    hxsecdEdxVar_1->Rebin(20);
+    hxsecdEdxVar_2->Rebin(20);
+    hxsecdEdxVar_3->Rebin(20);
+    hxsecdEdxVar_4->Rebin(20);
+    hxsecdEdxVar_0->Draw("P");
+    hxsecdEdxVar_1->Draw("PSAME");
+    hxsecdEdxVar_2->Draw("PSAME");
+    hxsecdEdxVar_3->Draw("PSAME");
+    hxsecdEdxVar_4->Draw("PSAME");
+    auto l_xsecdEdxVar = new TLegend(0.8, 0.70, 0.9, 0.85);
+    l_xsecdEdxVar->SetTextSize(0.03);
+    l_xsecdEdxVar->SetBorderSize(0);
+    l_xsecdEdxVar->AddEntry(hxsecdEdxVar_0, "base", "p");
+    l_xsecdEdxVar->AddEntry(hxsecdEdxVar_1, "<dE/dx> + 3%", "p");
+    l_xsecdEdxVar->AddEntry(hxsecdEdxVar_2, "<dE/dx> - 3%", "p");
+    l_xsecdEdxVar->AddEntry(hxsecdEdxVar_3, "#sigma_{dE/dx} + 3%", "p");
+    l_xsecdEdxVar->AddEntry(hxsecdEdxVar_4, "#sigma_{dE/dx} - 3%", "p");
+    l_xsecdEdxVar->Draw();
+    hxsecdEdxVar_1->Write("hxsecdEdxVar_0", TObject::kWriteDelete);
+    hxsecdEdxVar_1->Write("hxsecdEdxVar_1", TObject::kWriteDelete);
+    hxsecdEdxVar_2->Write("hxsecdEdxVar_2", TObject::kWriteDelete);
+    hxsecdEdxVar_3->Write("hxsecdEdxVar_3", TObject::kWriteDelete);
+    hxsecdEdxVar_4->Write("hxsecdEdxVar_4", TObject::kWriteDelete);
+    cxsecdEdxVar->Print(Form("%s/cxsecdEdxVar.root", outDir.Data()),"root");
+    cxsecdEdxVar->Print(Form("%s/cxsecdEdxVar.pdf", outDir.Data()),"pdf");
+
+    // --- Extract PID sys. err. for the 5bins of cross section
+    // mean dE/dx
+    double sys_dEdx_mean_1[3] = {hxsecdEdxVar_0->GetBinContent(1), hxsecdEdxVar_1->GetBinContent(1), hxsecdEdxVar_2->GetBinContent(1)};
+    double sys_dEdx_mean_2[3] = {hxsecdEdxVar_0->GetBinContent(2), hxsecdEdxVar_1->GetBinContent(2), hxsecdEdxVar_2->GetBinContent(2)};
+    double sys_dEdx_mean_3[3] = {hxsecdEdxVar_0->GetBinContent(3), hxsecdEdxVar_1->GetBinContent(3), hxsecdEdxVar_2->GetBinContent(3)};
+    double sys_dEdx_mean_4[3] = {hxsecdEdxVar_0->GetBinContent(4), hxsecdEdxVar_1->GetBinContent(4), hxsecdEdxVar_2->GetBinContent(4)};
+    double sys_dEdx_mean_5[3] = {hxsecdEdxVar_0->GetBinContent(5), hxsecdEdxVar_1->GetBinContent(5), hxsecdEdxVar_2->GetBinContent(5)};
+
+    double err_xsec_dEdx_mean_1 = TMath::RMS(3, sys_dEdx_mean_1)/hxsecdEdxVar_0->GetBinContent(1);
+    double err_xsec_dEdx_mean_2 = TMath::RMS(3, sys_dEdx_mean_2)/hxsecdEdxVar_0->GetBinContent(1);
+    double err_xsec_dEdx_mean_3 = TMath::RMS(3, sys_dEdx_mean_3)/hxsecdEdxVar_0->GetBinContent(1);
+    double err_xsec_dEdx_mean_4 = TMath::RMS(3, sys_dEdx_mean_4)/hxsecdEdxVar_0->GetBinContent(1);
+    double err_xsec_dEdx_mean_5 = TMath::RMS(3, sys_dEdx_mean_5)/hxsecdEdxVar_0->GetBinContent(1);
+
+    // --- Extract PID sys. err. for the 5bins of cross section
+    // width dE/dx
+    double sys_dEdx_width_1[3] = {hxsecdEdxVar_0->GetBinContent(1), hxsecdEdxVar_3->GetBinContent(1), hxsecdEdxVar_4->GetBinContent(1)};
+    double sys_dEdx_width_2[3] = {hxsecdEdxVar_0->GetBinContent(2), hxsecdEdxVar_3->GetBinContent(2), hxsecdEdxVar_4->GetBinContent(2)};
+    double sys_dEdx_width_3[3] = {hxsecdEdxVar_0->GetBinContent(3), hxsecdEdxVar_3->GetBinContent(3), hxsecdEdxVar_4->GetBinContent(3)};
+    double sys_dEdx_width_4[3] = {hxsecdEdxVar_0->GetBinContent(4), hxsecdEdxVar_3->GetBinContent(4), hxsecdEdxVar_4->GetBinContent(4)};
+    double sys_dEdx_width_5[3] = {hxsecdEdxVar_0->GetBinContent(5), hxsecdEdxVar_3->GetBinContent(5), hxsecdEdxVar_4->GetBinContent(5)};
+
+    double err_xsec_dEdx_width_1 = TMath::RMS(3, sys_dEdx_width_1)/hxsecdEdxVar_0->GetBinContent(1);
+    double err_xsec_dEdx_width_2 = TMath::RMS(3, sys_dEdx_width_2)/hxsecdEdxVar_0->GetBinContent(1);
+    double err_xsec_dEdx_width_3 = TMath::RMS(3, sys_dEdx_width_3)/hxsecdEdxVar_0->GetBinContent(1);
+    double err_xsec_dEdx_width_4 = TMath::RMS(3, sys_dEdx_width_4)/hxsecdEdxVar_0->GetBinContent(1);
+    double err_xsec_dEdx_width_5 = TMath::RMS(3, sys_dEdx_width_5)/hxsecdEdxVar_0->GetBinContent(1);
+
+    printf("double err_xsec_dEdx_mean[5] = {%f, %f, %f, %f, %f}; \n", err_xsec_dEdx_mean_1, err_xsec_dEdx_mean_2, err_xsec_dEdx_mean_3, err_xsec_dEdx_mean_4, err_xsec_dEdx_mean_5);
+    printf("double err_xsec_dEdx_width[5] = {%f, %f, %f, %f, %f}; \n", err_xsec_dEdx_width_1, err_xsec_dEdx_width_2, err_xsec_dEdx_width_3, err_xsec_dEdx_width_4, err_xsec_dEdx_width_5);
+
+    // double err_xsec_dEdx_mean[5] = {0.012381, 0.072927, 0.134824, 0.045944, 0.013546}; 
+    // double err_xsec_dEdx_width[5] = {0.000960, 0.007780, 0.061392, 0.043450, 0.010984};
+
+    // double err_xsec_dEdx_mean[5] = {0.009864, 0.074512, 0.138657, 0.059612, 0.013369}; 
+    // double err_xsec_dEdx_width[5] = {0.000441, 0.008398, 0.063546, 0.036764, 0.004275};  
+
+    // Yields
+    // --- MC
+    TCanvas *cYieldVsMkk_mc = new TCanvas("cYieldVsMkk_mc", "cYieldVsMkk_mc", 900, 600);
+    cYieldVsMkk_mc->cd();
+    auto lYieldVsMkk_mc = new TLegend(0.6, 0.65, 0.9, 0.95);
+    lYieldVsMkk_mc->SetTextSize(0.03);
+    lYieldVsMkk_mc->SetBorderSize(0);    
+    // gNsig_mc->Draw("AP");
+    // gNsig_UnLikeCharge_mc->Draw("PSAME");
+    // gNsig_dEdxCut_mc->Draw("PSAME");
+    // gNsig_PtCut01_mc->Draw("PSAME");
+    // gNsig_RejectPionSub_mc->Draw("AP");
+    gNsig_RejectPionElectronSub_mc->Draw("AP");
+    gNsig_RejectAllSub_mc->Draw("PSAME");
+    // lYieldVsMkk_mc->AddEntry(gNsig_mc, "pair tracks", "p");
+    // lYieldVsMkk_mc->AddEntry(gNsig_UnLikeCharge_mc, "opposite charge", "p");
+    // lYieldVsMkk_mc->AddEntry(gNsig_dEdxCut_mc, "|#sigma^{K^{#pm}}_{dE/dx}|<3", "p");
+    // lYieldVsMkk_mc->AddEntry(gNsig_PtCut01_mc, "|#sigma^{K^{#pm}}_{dE/dx}|<3 + p_{T}<0.1 GeV/c", "p");
+    // lYieldVsMkk_mc->AddEntry(gNsig_RejectPionSub_mc, "|#sigma^{(#pi)}_{dE/dx}|>2 + Bkg subtraction", "p");
+    lYieldVsMkk_mc->AddEntry(gNsig_RejectPionElectronSub_mc, "|#sigma^{(#pi, e)}_{dE/dx}|>2 + Bkg subtraction", "p");
+    lYieldVsMkk_mc->AddEntry(gNsig_RejectAllSub_mc, "|#sigma^{(#pi, e, #mu)}_{dE/dx}|>2 + Bkg subtraction", "p");
+    lYieldVsMkk_mc->Draw();
+    gNsig_RejectPionElectronSub_mc->Write("gNsig_RejectPionElectronSub_mc", TObject::kWriteDelete);
+    gNsig_RejectAllSub_mc->Write("gNsig_RejectAllSub_mc", TObject::kWriteDelete);
+    cYieldVsMkk_mc->Print(Form("%s/cYieldVsMkk_mc.root", outDir.Data()),"root");
+    cYieldVsMkk_mc->Print(Form("%s/cYieldVsMkk_mc.pdf", outDir.Data()),"pdf");
+
+    // --- Data
+    TCanvas *cYieldVsMkk_data = new TCanvas("cYieldVsMkk_data", "cYieldVsMkk_data", 900, 600);
+    cYieldVsMkk_data->cd();
+    auto lYieldVsMkk_data = new TLegend(0.6, 0.65, 0.9, 0.95);
+    lYieldVsMkk_data->SetTextSize(0.03);
+    lYieldVsMkk_data->SetBorderSize(0);    
+    // gNsig_data->Draw("AP");
+    // gNsig_UnLikeCharge_data->Draw("PSAME");
+    // gNsig_dEdxCut_data->Draw("PSAME");
+    // gNsig_PtCut01_data->Draw("PSAME");
+    // gNsig_RejectPionSub_data->Draw("AP");
+    gNsig_RejectPionElectronSub_data->Draw("AP");
+    gNsig_RejectAllSub_data->Draw("PSAME"); // PSAME
+    // lYieldVsMkk_data->AddEntry(gNsig_data, "pair tracks", "p");
+    // lYieldVsMkk_data->AddEntry(gNsig_UnLikeCharge_data, "opposite charge", "p");
+    // lYieldVsMkk_data->AddEntry(gNsig_dEdxCut_data, "|#sigma^{K^{#pm}}_{dE/dx}|<3", "p");
+    // lYieldVsMkk_data->AddEntry(gNsig_PtCut01_data, "|#sigma^{K^{#pm}}_{dE/dx}|<3 + p_{T}<0.1 GeV/c", "p");
+    // lYieldVsMkk_data->AddEntry(gNsig_RejectPionSub_data, "|#sigma^{(#pi)}_{dE/dx}|>2 + Bkg subtraction", "p");
+    lYieldVsMkk_data->AddEntry(gNsig_RejectPionElectronSub_data, "|#sigma^{(#pi,e)}_{dE/dx}|>2 + Bkg subtraction", "p");
+    lYieldVsMkk_data->AddEntry(gNsig_RejectAllSub_data, "|#sigma^{(#pi, e, #mu)}_{dE/dx}|>2 + Bkg subtraction", "p");
+    lYieldVsMkk_data->Draw();
+    gNsig_RejectPionElectronSub_data->Write("gNsig_RejectPionElectronSub_data", TObject::kWriteDelete);
+    gNsig_RejectAllSub_data->Write("gNsig_RejectAllSub_data", TObject::kWriteDelete);
+    cYieldVsMkk_data->Print(Form("%s/cYieldVsMkk_data.root", outDir.Data()),"root");
+    cYieldVsMkk_data->Print(Form("%s/cYieldVsMkk_data.pdf", outDir.Data()),"pdf");
+
+    // Par Pt after Bkg sub
+    TCanvas *cPairPtsub = new TCanvas("cPairPtsub", "cPairPtsub", 900, 600);
+    cPairPtsub->cd();
+    gPairPtsub->Draw("AP"); // PSAME
+    gPairPtsub->Write("gPtPairSub", TObject::kWriteDelete); // Form("h%s_gNsig_dEdxCut", name.Data()), TObject::kWriteDelete
+    cPairPtsub->Print(Form("%s/cPairPtsub.root", outDir.Data()),"root");
+    cPairPtsub->Print(Form("%s/cPairPtsub.pdf", outDir.Data()),"pdf");
+
+    // Efficiency
     TCanvas *ckpkmEfficiency = new TCanvas("ckpkmEfficiency", "ckpkmEfficiency", 900, 600);
     ckpkmEfficiency->cd();
     auto lkpkmEfficiency = new TLegend(0.18, 0.65, 0.35, 0.95);
@@ -532,15 +952,15 @@ void kpkmAna()
     gEff_dEdxCut->Draw("PSAME");
     gEff_PtCut01->Draw("PSAME");
     gEff_RejectPionSub->Draw("PSAME");
-    gEff_RejectPionMuonSub->Draw("PSAME");
+    gEff_RejectPionElectronSub->Draw("PSAME");
     gEff_RejectAllSub->Draw("PSAME");
     lkpkmEfficiency->AddEntry(gEff, "pair tracks", "p");
     lkpkmEfficiency->AddEntry(gEff_UnLikeCharge, "opposite charge", "p");
     lkpkmEfficiency->AddEntry(gEff_dEdxCut, "|#sigma^{K^{#pm}}_{dE/dx}|<3", "p");
     lkpkmEfficiency->AddEntry(gEff_PtCut01, "|#sigma^{K^{#pm}}_{dE/dx}|<3 + p_{T}<0.1 GeV/c", "p");
     lkpkmEfficiency->AddEntry(gEff_RejectPionSub, "p_{T}<0.1. + |#sigma^{(#pi)}_{dE/dx}|>2 + Bkg subtraction", "p");
-    lkpkmEfficiency->AddEntry(gEff_RejectPionMuonSub, "p_{T}<0.1 + |#sigma^{(#pi, #mu)}_{dE/dx}|>2 + Bkg subtraction", "p");
-    lkpkmEfficiency->AddEntry(gEff_RejectAllSub, "p_{T}<0.1 + |#sigma^{(#pi, #mu, e)}_{dE/dx}|>2 + Bkg subtraction", "p");
+    lkpkmEfficiency->AddEntry(gEff_RejectPionElectronSub, "p_{T}<0.1 + |#sigma^{(#pi, e)}_{dE/dx}|>2 + Bkg subtraction", "p");
+    lkpkmEfficiency->AddEntry(gEff_RejectAllSub, "p_{T}<0.1 + |#sigma^{(#pi, e, #mu)}_{dE/dx}|>2 + Bkg subtraction", "p");
     lkpkmEfficiency->Draw();
     gEff_dEdxCut->Write(); // Form("h%s_gEff_dEdxCut", name.Data()), TObject::kWriteDelete
     ckpkmEfficiency->Print(Form("%s/ckpkmEfficiency.root", outDir.Data()),"root");
@@ -549,7 +969,7 @@ void kpkmAna()
     TCanvas *ckpkmXSection = new TCanvas("ckpkmXSection", "ckpkmXSection", 900, 600);
     ckpkmXSection->cd();
     // ckpkmXSection->SetLogy();
-    gkpkmXSection->RemovePoint(4);
+    // gkpkmXSection->RemovePoint(4);
     gkpkmXSection->Draw("AP");
     gkpkmXSection->Write(); // Form("h%s_gkpkmXSection", name.Data()), TObject::kWriteDelete
     ckpkmXSection->Print(Form("%s/ckpkmXSection.root", outDir.Data()),"root");
@@ -558,7 +978,7 @@ void kpkmAna()
     TCanvas *cresidual = new TCanvas("cresidual", "cresidual", 900, 600);
     cresidual->cd();
     gresidual->Draw("AP");
-    gresidual->Write(); // Form("h%s_gresidual", name.Data()), TObject::kWriteDelete
+    // gresidual->Write(); // Form("h%s_gresidual", name.Data()), TObject::kWriteDelete
     cresidual->Print(Form("%s/cresidual.root", outDir.Data()),"root");
     cresidual->Print(Form("%s/cresidual.pdf", outDir.Data()),"pdf");
 
@@ -620,12 +1040,19 @@ void kpkmAna()
     // printf(" ####### mass = %0.3f, %0.3f, %0.3f, %0.3f, %0.3f, %0.3f, %0.3f\n", x[1], x[2], x[3], x[4], x[5], x[6], x[7]);
     // printf(" ####### xsec = %0.3f, %0.3f, %0.3f, %0.3f, %0.3f, %0.3f, %0.3f\n", y_m2k[1], y_m2k[2], y_m2k[3], y_m2k[4], y_m2k[5], y_m2k[6], y_m2k[7]);
 
+    // fprintf(tab_eff, "\\hline\n \\end{tabular}\n \\end{table}\n \\end{document}\n");
+    // fclose(tab_eff);
+    // gSystem->Exec(Form("pdflatex -output-directory %s %s/tab_eff.tex", outDir.Data(), outDir.Data()));
+
     fprintf(tab_sys_m, "\\hline\n \\end{tabular}\n \\end{table}\n \\end{document}\n");
     fclose(tab_sys_m);
     gSystem->Exec(Form("pdflatex -output-directory %s %s/tab_sys_m.tex", outDir.Data(), outDir.Data()));
 
     // End: ====================  Cross section in mass bins ====================
 
+    // =================================================================================
+    // =================================================================================
+    // =================================================================================
 
     // Begin: ====================  Cross section in cos(Theta) bins ====================
 
@@ -648,10 +1075,10 @@ void kpkmAna()
     Double_t x_cosTheta[n_cosTheta], y_cosTheta[n_cosTheta], exl_cosTheta[n_cosTheta], exh_cosTheta[n_cosTheta], eylstat_cosTheta[n_cosTheta], eyhstat_cosTheta[n_cosTheta], eylsys_cosTheta[n_cosTheta], eyhsys_cosTheta[n_cosTheta];
 
     double xsec_cosTheta_optimal[]              = {18.615, 21.292, 6.646}; // pt < 0.1; rad: 9; reject: 2
-    double xsec_cosTheta_rad8[]                 = {18.753, 20.531, 6.679}; // regions: 8
-    double xsec_cosTheta_rad10[]                = {18.547, 21.211, 6.607}; // regions: 10
-    double xsec_cosTheta_rejectLessStd[]        = {18.902, 18.032, 5.266}; // 1.75
-    double xsec_cosTheta_rejectMoreStd[]        = {22.071, 28.229, 8.537}; // 2.25
+    double xsec_cosTheta_rad8[]                 = {18.637, 21.312, 6.656}; // regions: 8
+    double xsec_cosTheta_rad10[]                = {18.600, 21.277, 6.636}; // regions: 10
+    double xsec_cosTheta_rejectLessStd[]        = {17.458, 20.657, 6.424}; // 1.75
+    double xsec_cosTheta_rejectMoreStd[]        = {19.162, 21.885, 6.880}; // 2.25
 
     for (Int_t i = 1; i <= hMassPairKaonVsCosThetaSub_data->GetNbinsX(); ++i)
     {
@@ -672,7 +1099,7 @@ void kpkmAna()
         hMassPairKaon_py_data->SetTitle(Form("%.2f<cos(#theta)<%.2f;m_{K^{+}K^{-}} (GeV/c^{2});Counts",ymin,ymax));
 
         double eff = 0, deff = 0, xsec_kpkm = 0, dxsec_kpkm_stat = 0;
-        double lumi_kpkm = 505; // mili barn^{-1}
+        double lumi_kpkm = 419; // mili barn^{-1}
         double fpileup = 1.111; // from Rho(770) analysis
         double Nsig_truth = hMassPairKaon_py_truth->Integral();
         double dNsig_mc;
@@ -723,7 +1150,7 @@ void kpkmAna()
 
         fprintf(tab_sys_theta, "(%0.2f , %0.2f) & %0.f & %0.f & %0.f & %0.2f$\\pm$%0.2f$\\pm$%0.2f & %0.2f & %0.2f \\\\ \n", ymin, ymax, Nsig_truth, Nsig_mc, Nsig_data, xsec_kpkm, dxsec_kpkm_stat, dxsec_phi2pi_sys, err_xsec_rad * 100, err_xsec_reject * 100);
 
-        printf("i = %d, ymin = %f, ymax = %f, Nsig_data = %f, eff = %f, x_cosTheta = %f, y_cosTheta = %f, eylstat_cosTheta = %f, eylsys_cosTheta = %f \n", i-1, ymin, ymax, Nsig_data, eff, x_cosTheta[i-1], y_cosTheta[i-1], eylstat_cosTheta[i-1], eylsys_cosTheta[i-1]);
+        // printf("i = %d, ymin = %f, ymax = %f, Nsig_data = %f, eff = %f, x_cosTheta = %f, y_cosTheta = %f, eylstat_cosTheta = %f, eylsys_cosTheta = %f \n", i-1, ymin, ymax, Nsig_data, eff, x_cosTheta[i-1], y_cosTheta[i-1], eylstat_cosTheta[i-1], eylsys_cosTheta[i-1]);
 
         // printf(" ####### ymin, ymaxt = %0.3f , %0.3f \n", ymin, ymax);
         // printf(" ####### xsec_kpkm = %0.3f \n", xsec_kpkm);
@@ -766,11 +1193,11 @@ void kpkmAna()
     fclose(tab_sys_theta);
     gSystem->Exec(Form("pdflatex -output-directory %s %s/tab_sys_theta.tex", outDir.Data(), outDir.Data()));
 
-    printf(" ####### xsec_cosTheta = %0.3f, %0.3f, %0.3f \n", y_cosTheta[0], y_cosTheta[1], y_cosTheta[2]);
+    printf(" ####### xsec_cosTheta = %0.3f, %0.3f, %0.3f, %0.3f, %0.3f \n", y_cosTheta[0], y_cosTheta[1], y_cosTheta[2], y_cosTheta[3], y_cosTheta[4]);
 
     // End: ====================  Cross section in cos(Theta) bins ====================
 
-    printf(" ####### xsec_m2k = %0.3f, %0.3f, %0.3f \n", y_m2k[0], y_m2k[1], y_m2k[2]);
+    printf(" ####### xsec_m2k = %0.3f, %0.3f, %0.3f, %0.3f, %0.3f \n", y_m2k[0], y_m2k[1], y_m2k[2], y_m2k[3], y_m2k[4]);
   
 /*
     // Begin: ====================  Cross section in rapidity bins ====================
